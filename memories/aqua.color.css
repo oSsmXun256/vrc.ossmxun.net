@@ -1,0 +1,749 @@
+/*!
+ * Aqua Color Utilities v1.3.0
+ * Individual Component Color Control System
+ * コンポーネント個別色制御システム
+ */
+
+/* ========================================================================== 
+   INDIVIDUAL COLOR UTILITIES
+   ========================================================================== */
+
+/* Text Colors - Individual Control */
+.aqua-text-white { color: #ffffff !important; }
+.aqua-text-black { color: #000000 !important; }
+.aqua-text-gray-100 { color: #f7fafc !important; }
+.aqua-text-gray-200 { color: #edf2f7 !important; }
+.aqua-text-gray-300 { color: #e2e8f0 !important; }
+.aqua-text-gray-400 { color: #cbd5e0 !important; }
+.aqua-text-gray-500 { color: #a0aec0 !important; }
+.aqua-text-gray-600 { color: #718096 !important; }
+.aqua-text-gray-700 { color: #4a5568 !important; }
+.aqua-text-gray-800 { color: #2d3748 !important; }
+.aqua-text-gray-900 { color: #1a202c !important; }
+
+.aqua-text-blue-100 { color: #ebf8ff !important; }
+.aqua-text-blue-200 { color: #bee3f8 !important; }
+.aqua-text-blue-300 { color: #90cdf4 !important; }
+.aqua-text-blue-400 { color: #63b3ed !important; }
+.aqua-text-blue-500 { color: #4299e1 !important; }
+.aqua-text-blue-600 { color: #3182ce !important; }
+.aqua-text-blue-700 { color: #2b77cb !important; }
+.aqua-text-blue-800 { color: #2c5aa0 !important; }
+.aqua-text-blue-900 { color: #2a4365 !important; }
+
+.aqua-text-red-100 { color: #fed7d7 !important; }
+.aqua-text-red-200 { color: #feb2b2 !important; }
+.aqua-text-red-300 { color: #fc8181 !important; }
+.aqua-text-red-400 { color: #f56565 !important; }
+.aqua-text-red-500 { color: #e53e3e !important; }
+.aqua-text-red-600 { color: #c53030 !important; }
+.aqua-text-red-700 { color: #9b2c2c !important; }
+.aqua-text-red-800 { color: #822727 !important; }
+.aqua-text-red-900 { color: #63171b !important; }
+
+.aqua-text-green-100 { color: #f0fff4 !important; }
+.aqua-text-green-200 { color: #c6f6d5 !important; }
+.aqua-text-green-300 { color: #9ae6b4 !important; }
+.aqua-text-green-400 { color: #68d391 !important; }
+.aqua-text-green-500 { color: #48bb78 !important; }
+.aqua-text-green-600 { color: #38a169 !important; }
+.aqua-text-green-700 { color: #2f855a !important; }
+.aqua-text-green-800 { color: #276749 !important; }
+.aqua-text-green-900 { color: #22543d !important; }
+
+.aqua-text-purple-100 { color: #faf5ff !important; }
+.aqua-text-purple-200 { color: #e9d8fd !important; }
+.aqua-text-purple-300 { color: #d6bcfa !important; }
+.aqua-text-purple-400 { color: #b794f6 !important; }
+.aqua-text-purple-500 { color: #9f7aea !important; }
+.aqua-text-purple-600 { color: #805ad5 !important; }
+.aqua-text-purple-700 { color: #6b46c1 !important; }
+.aqua-text-purple-800 { color: #553c9a !important; }
+.aqua-text-purple-900 { color: #44337a !important; }
+
+.aqua-text-yellow-100 { color: #fffff0 !important; }
+.aqua-text-yellow-200 { color: #fefcbf !important; }
+.aqua-text-yellow-300 { color: #faf089 !important; }
+.aqua-text-yellow-400 { color: #f6e05e !important; }
+.aqua-text-yellow-500 { color: #ecc94b !important; }
+.aqua-text-yellow-600 { color: #d69e2e !important; }
+.aqua-text-yellow-700 { color: #b7791f !important; }
+.aqua-text-yellow-800 { color: #975a16 !important; }
+.aqua-text-yellow-900 { color: #744210 !important; }
+
+.aqua-text-pink-100 { color: #fff5f5 !important; }
+.aqua-text-pink-200 { color: #fed7e2 !important; }
+.aqua-text-pink-300 { color: #fbb6ce !important; }
+.aqua-text-pink-400 { color: #f687b3 !important; }
+.aqua-text-pink-500 { color: #ed64a6 !important; }
+.aqua-text-pink-600 { color: #d53f8c !important; }
+.aqua-text-pink-700 { color: #b83280 !important; }
+.aqua-text-pink-800 { color: #97266d !important; }
+.aqua-text-pink-900 { color: #702459 !important; }
+
+.aqua-text-indigo-100 { color: #ebf4ff !important; }
+.aqua-text-indigo-200 { color: #c3dafe !important; }
+.aqua-text-indigo-300 { color: #a3bffa !important; }
+.aqua-text-indigo-400 { color: #7c3aed !important; }
+.aqua-text-indigo-500 { color: #667eea !important; }
+.aqua-text-indigo-600 { color: #5a67d8 !important; }
+.aqua-text-indigo-700 { color: #4c51bf !important; }
+.aqua-text-indigo-800 { color: #434190 !important; }
+.aqua-text-indigo-900 { color: #3c366b !important; }
+
+/* ========================================================================== 
+   BACKGROUND COLORS - Individual Control
+   ========================================================================== */
+
+.aqua-bg-white { background-color: #ffffff !important; }
+.aqua-bg-black { background-color: #000000 !important; }
+
+.aqua-bg-gray-100 { background-color: #f7fafc !important; }
+.aqua-bg-gray-200 { background-color: #edf2f7 !important; }
+.aqua-bg-gray-300 { background-color: #e2e8f0 !important; }
+.aqua-bg-gray-400 { background-color: #cbd5e0 !important; }
+.aqua-bg-gray-500 { background-color: #a0aec0 !important; }
+.aqua-bg-gray-600 { background-color: #718096 !important; }
+.aqua-bg-gray-700 { background-color: #4a5568 !important; }
+.aqua-bg-gray-800 { background-color: #2d3748 !important; }
+.aqua-bg-gray-900 { background-color: #1a202c !important; }
+
+.aqua-bg-blue-100 { background-color: #ebf8ff !important; }
+.aqua-bg-blue-200 { background-color: #bee3f8 !important; }
+.aqua-bg-blue-300 { background-color: #90cdf4 !important; }
+.aqua-bg-blue-400 { background-color: #63b3ed !important; }
+.aqua-bg-blue-500 { background-color: #4299e1 !important; }
+.aqua-bg-blue-600 { background-color: #3182ce !important; }
+.aqua-bg-blue-700 { background-color: #2b77cb !important; }
+.aqua-bg-blue-800 { background-color: #2c5aa0 !important; }
+.aqua-bg-blue-900 { background-color: #2a4365 !important; }
+
+.aqua-bg-red-100 { background-color: #fed7d7 !important; }
+.aqua-bg-red-200 { background-color: #feb2b2 !important; }
+.aqua-bg-red-300 { background-color: #fc8181 !important; }
+.aqua-bg-red-400 { background-color: #f56565 !important; }
+.aqua-bg-red-500 { background-color: #e53e3e !important; }
+.aqua-bg-red-600 { background-color: #c53030 !important; }
+.aqua-bg-red-700 { background-color: #9b2c2c !important; }
+.aqua-bg-red-800 { background-color: #822727 !important; }
+.aqua-bg-red-900 { background-color: #63171b !important; }
+
+.aqua-bg-green-100 { background-color: #f0fff4 !important; }
+.aqua-bg-green-200 { background-color: #c6f6d5 !important; }
+.aqua-bg-green-300 { background-color: #9ae6b4 !important; }
+.aqua-bg-green-400 { background-color: #68d391 !important; }
+.aqua-bg-green-500 { background-color: #48bb78 !important; }
+.aqua-bg-green-600 { background-color: #38a169 !important; }
+.aqua-bg-green-700 { background-color: #2f855a !important; }
+.aqua-bg-green-800 { background-color: #276749 !important; }
+.aqua-bg-green-900 { background-color: #22543d !important; }
+
+.aqua-bg-purple-100 { background-color: #faf5ff !important; }
+.aqua-bg-purple-200 { background-color: #e9d8fd !important; }
+.aqua-bg-purple-300 { background-color: #d6bcfa !important; }
+.aqua-bg-purple-400 { background-color: #b794f6 !important; }
+.aqua-bg-purple-500 { background-color: #9f7aea !important; }
+.aqua-bg-purple-600 { background-color: #805ad5 !important; }
+.aqua-bg-purple-700 { background-color: #6b46c1 !important; }
+.aqua-bg-purple-800 { background-color: #553c9a !important; }
+.aqua-bg-purple-900 { background-color: #44337a !important; }
+
+.aqua-bg-yellow-100 { background-color: #fffff0 !important; }
+.aqua-bg-yellow-200 { background-color: #fefcbf !important; }
+.aqua-bg-yellow-300 { background-color: #faf089 !important; }
+.aqua-bg-yellow-400 { background-color: #f6e05e !important; }
+.aqua-bg-yellow-500 { background-color: #ecc94b !important; }
+.aqua-bg-yellow-600 { background-color: #d69e2e !important; }
+.aqua-bg-yellow-700 { background-color: #b7791f !important; }
+.aqua-bg-yellow-800 { background-color: #975a16 !important; }
+.aqua-bg-yellow-900 { background-color: #744210 !important; }
+
+.aqua-bg-pink-100 { background-color: #fff5f5 !important; }
+.aqua-bg-pink-200 { background-color: #fed7e2 !important; }
+.aqua-bg-pink-300 { background-color: #fbb6ce !important; }
+.aqua-bg-pink-400 { background-color: #f687b3 !important; }
+.aqua-bg-pink-500 { background-color: #ed64a6 !important; }
+.aqua-bg-pink-600 { background-color: #d53f8c !important; }
+.aqua-bg-pink-700 { background-color: #b83280 !important; }
+.aqua-bg-pink-800 { background-color: #97266d !important; }
+.aqua-bg-pink-900 { background-color: #702459 !important; }
+
+.aqua-bg-indigo-100 { background-color: #ebf4ff !important; }
+.aqua-bg-indigo-200 { background-color: #c3dafe !important; }
+.aqua-bg-indigo-300 { background-color: #a3bffa !important; }
+.aqua-bg-indigo-400 { background-color: #7c3aed !important; }
+.aqua-bg-indigo-500 { background-color: #667eea !important; }
+.aqua-bg-indigo-600 { background-color: #5a67d8 !important; }
+.aqua-bg-indigo-700 { background-color: #4c51bf !important; }
+.aqua-bg-indigo-800 { background-color: #434190 !important; }
+.aqua-bg-indigo-900 { background-color: #3c366b !important; }
+
+/* ========================================================================== 
+   BORDER COLORS - Individual Control
+   ========================================================================== */
+
+.aqua-border-white { border-color: #ffffff !important; }
+.aqua-border-black { border-color: #000000 !important; }
+
+.aqua-border-gray-100 { border-color: #f7fafc !important; }
+.aqua-border-gray-200 { border-color: #edf2f7 !important; }
+.aqua-border-gray-300 { border-color: #e2e8f0 !important; }
+.aqua-border-gray-400 { border-color: #cbd5e0 !important; }
+.aqua-border-gray-500 { border-color: #a0aec0 !important; }
+.aqua-border-gray-600 { border-color: #718096 !important; }
+.aqua-border-gray-700 { border-color: #4a5568 !important; }
+.aqua-border-gray-800 { border-color: #2d3748 !important; }
+.aqua-border-gray-900 { border-color: #1a202c !important; }
+
+.aqua-border-blue-100 { border-color: #ebf8ff !important; }
+.aqua-border-blue-200 { border-color: #bee3f8 !important; }
+.aqua-border-blue-300 { border-color: #90cdf4 !important; }
+.aqua-border-blue-400 { border-color: #63b3ed !important; }
+.aqua-border-blue-500 { border-color: #4299e1 !important; }
+.aqua-border-blue-600 { border-color: #3182ce !important; }
+.aqua-border-blue-700 { border-color: #2b77cb !important; }
+.aqua-border-blue-800 { border-color: #2c5aa0 !important; }
+.aqua-border-blue-900 { border-color: #2a4365 !important; }
+
+.aqua-border-red-100 { border-color: #fed7d7 !important; }
+.aqua-border-red-200 { border-color: #feb2b2 !important; }
+.aqua-border-red-300 { border-color: #fc8181 !important; }
+.aqua-border-red-400 { border-color: #f56565 !important; }
+.aqua-border-red-500 { border-color: #e53e3e !important; }
+.aqua-border-red-600 { border-color: #c53030 !important; }
+.aqua-border-red-700 { border-color: #9b2c2c !important; }
+.aqua-border-red-800 { border-color: #822727 !important; }
+.aqua-border-red-900 { border-color: #63171b !important; }
+
+.aqua-border-green-100 { border-color: #f0fff4 !important; }
+.aqua-border-green-200 { border-color: #c6f6d5 !important; }
+.aqua-border-green-300 { border-color: #9ae6b4 !important; }
+.aqua-border-green-400 { border-color: #68d391 !important; }
+.aqua-border-green-500 { border-color: #48bb78 !important; }
+.aqua-border-green-600 { border-color: #38a169 !important; }
+.aqua-border-green-700 { border-color: #2f855a !important; }
+.aqua-border-green-800 { border-color: #276749 !important; }
+.aqua-border-green-900 { border-color: #22543d !important; }
+
+.aqua-border-purple-100 { border-color: #faf5ff !important; }
+.aqua-border-purple-200 { border-color: #e9d8fd !important; }
+.aqua-border-purple-300 { border-color: #d6bcfa !important; }
+.aqua-border-purple-400 { border-color: #b794f6 !important; }
+.aqua-border-purple-500 { border-color: #9f7aea !important; }
+.aqua-border-purple-600 { border-color: #805ad5 !important; }
+.aqua-border-purple-700 { border-color: #6b46c1 !important; }
+.aqua-border-purple-800 { border-color: #553c9a !important; }
+.aqua-border-purple-900 { border-color: #44337a !important; }
+
+/* ========================================================================== 
+   GLASS EFFECTS WITH CUSTOM COLORS
+   ========================================================================== */
+
+/* Blue Glass Variants */
+.aqua-glass-blue-light { 
+    background: rgba(66, 153, 225, 0.1) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(66, 153, 225, 0.3) !important;
+}
+
+.aqua-glass-blue-medium { 
+    background: rgba(66, 153, 225, 0.15) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid rgba(66, 153, 225, 0.4) !important;
+}
+
+.aqua-glass-blue-strong { 
+    background: rgba(66, 153, 225, 0.2) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    border: 1px solid rgba(66, 153, 225, 0.5) !important;
+}
+
+/* Red Glass Variants */
+.aqua-glass-red-light { 
+    background: rgba(229, 62, 62, 0.1) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(229, 62, 62, 0.3) !important;
+}
+
+.aqua-glass-red-medium { 
+    background: rgba(229, 62, 62, 0.15) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid rgba(229, 62, 62, 0.4) !important;
+}
+
+.aqua-glass-red-strong { 
+    background: rgba(229, 62, 62, 0.2) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    border: 1px solid rgba(229, 62, 62, 0.5) !important;
+}
+
+/* Green Glass Variants */
+.aqua-glass-green-light { 
+    background: rgba(72, 187, 120, 0.1) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(72, 187, 120, 0.3) !important;
+}
+
+.aqua-glass-green-medium { 
+    background: rgba(72, 187, 120, 0.15) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid rgba(72, 187, 120, 0.4) !important;
+}
+
+.aqua-glass-green-strong { 
+    background: rgba(72, 187, 120, 0.2) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    border: 1px solid rgba(72, 187, 120, 0.5) !important;
+}
+
+/* Purple Glass Variants */
+.aqua-glass-purple-light { 
+    background: rgba(159, 122, 234, 0.1) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(159, 122, 234, 0.3) !important;
+}
+
+.aqua-glass-purple-medium { 
+    background: rgba(159, 122, 234, 0.15) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid rgba(159, 122, 234, 0.4) !important;
+}
+
+.aqua-glass-purple-strong { 
+    background: rgba(159, 122, 234, 0.2) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    border: 1px solid rgba(159, 122, 234, 0.5) !important;
+}
+
+/* Yellow Glass Variants */
+.aqua-glass-yellow-light { 
+    background: rgba(236, 201, 75, 0.1) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(236, 201, 75, 0.3) !important;
+}
+
+.aqua-glass-yellow-medium { 
+    background: rgba(236, 201, 75, 0.15) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid rgba(236, 201, 75, 0.4) !important;
+}
+
+.aqua-glass-yellow-strong { 
+    background: rgba(236, 201, 75, 0.2) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    border: 1px solid rgba(236, 201, 75, 0.5) !important;
+}
+
+/* Pink Glass Variants */
+.aqua-glass-pink-light { 
+    background: rgba(237, 100, 166, 0.1) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(237, 100, 166, 0.3) !important;
+}
+
+.aqua-glass-pink-medium { 
+    background: rgba(237, 100, 166, 0.15) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1px solid rgba(237, 100, 166, 0.4) !important;
+}
+
+.aqua-glass-pink-strong { 
+    background: rgba(237, 100, 166, 0.2) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    border: 1px solid rgba(237, 100, 166, 0.5) !important;
+}
+
+/* ========================================================================== 
+   COMPONENT COLOR OVERRIDE UTILITIES
+   ========================================================================== */
+
+/* Button Color Overrides */
+.aqua-btn-blue { 
+    background: linear-gradient(45deg, #4299e1, #3182ce) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.aqua-btn-red { 
+    background: linear-gradient(45deg, #e53e3e, #c53030) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.aqua-btn-green { 
+    background: linear-gradient(45deg, #48bb78, #38a169) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.aqua-btn-purple { 
+    background: linear-gradient(45deg, #9f7aea, #805ad5) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.aqua-btn-yellow { 
+    background: linear-gradient(45deg, #ecc94b, #d69e2e) !important;
+    color: #744210 !important;
+    border: none !important;
+}
+
+.aqua-btn-pink { 
+    background: linear-gradient(45deg, #ed64a6, #d53f8c) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Card Color Overrides */
+.aqua-card-blue { 
+    background: rgba(66, 153, 225, 0.15) !important;
+    border-color: rgba(66, 153, 225, 0.4) !important;
+}
+
+.aqua-card-red { 
+    background: rgba(229, 62, 62, 0.15) !important;
+    border-color: rgba(229, 62, 62, 0.4) !important;
+}
+
+.aqua-card-green { 
+    background: rgba(72, 187, 120, 0.15) !important;
+    border-color: rgba(72, 187, 120, 0.4) !important;
+}
+
+.aqua-card-purple { 
+    background: rgba(159, 122, 234, 0.15) !important;
+    border-color: rgba(159, 122, 234, 0.4) !important;
+}
+
+.aqua-card-yellow { 
+    background: rgba(236, 201, 75, 0.15) !important;
+    border-color: rgba(236, 201, 75, 0.4) !important;
+}
+
+.aqua-card-pink { 
+    background: rgba(237, 100, 166, 0.15) !important;
+    border-color: rgba(237, 100, 166, 0.4) !important;
+}
+
+/* Input Color Overrides */
+.aqua-input-blue:focus { 
+    border-color: #4299e1 !important;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1) !important;
+}
+
+.aqua-input-red:focus { 
+    border-color: #e53e3e !important;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+}
+
+.aqua-input-green:focus { 
+    border-color: #48bb78 !important;
+    box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1) !important;
+}
+
+.aqua-input-purple:focus { 
+    border-color: #9f7aea !important;
+    box-shadow: 0 0 0 3px rgba(159, 122, 234, 0.1) !important;
+}
+
+/* ========================================================================== 
+   OPACITY VARIATIONS
+   ========================================================================== */
+
+.aqua-bg-opacity-5 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.05) !important; }
+.aqua-bg-opacity-10 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.1) !important; }
+.aqua-bg-opacity-15 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.15) !important; }
+.aqua-bg-opacity-20 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.2) !important; }
+.aqua-bg-opacity-25 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.25) !important; }
+.aqua-bg-opacity-30 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.3) !important; }
+.aqua-bg-opacity-40 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.4) !important; }
+.aqua-bg-opacity-50 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.5) !important; }
+.aqua-bg-opacity-60 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.6) !important; }
+.aqua-bg-opacity-70 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.7) !important; }
+.aqua-bg-opacity-75 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.75) !important; }
+.aqua-bg-opacity-80 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.8) !important; }
+.aqua-bg-opacity-90 { background-color: rgba(var(--bg-r, 0), var(--bg-g, 0), var(--bg-b, 0), 0.9) !important; }
+
+/* ========================================================================== 
+   HOVER COLOR UTILITIES
+   ========================================================================== */
+
+/* Hover Background Colors */
+.aqua-hover\:bg-blue-100:hover { background-color: #ebf8ff !important; }
+.aqua-hover\:bg-blue-200:hover { background-color: #bee3f8 !important; }
+.aqua-hover\:bg-blue-300:hover { background-color: #90cdf4 !important; }
+.aqua-hover\:bg-blue-400:hover { background-color: #63b3ed !important; }
+.aqua-hover\:bg-blue-500:hover { background-color: #4299e1 !important; }
+.aqua-hover\:bg-blue-600:hover { background-color: #3182ce !important; }
+
+.aqua-hover\:bg-red-100:hover { background-color: #fed7d7 !important; }
+.aqua-hover\:bg-red-200:hover { background-color: #feb2b2 !important; }
+.aqua-hover\:bg-red-300:hover { background-color: #fc8181 !important; }
+.aqua-hover\:bg-red-400:hover { background-color: #f56565 !important; }
+.aqua-hover\:bg-red-500:hover { background-color: #e53e3e !important; }
+.aqua-hover\:bg-red-600:hover { background-color: #c53030 !important; }
+
+.aqua-hover\:bg-green-100:hover { background-color: #f0fff4 !important; }
+.aqua-hover\:bg-green-200:hover { background-color: #c6f6d5 !important; }
+.aqua-hover\:bg-green-300:hover { background-color: #9ae6b4 !important; }
+.aqua-hover\:bg-green-400:hover { background-color: #68d391 !important; }
+.aqua-hover\:bg-green-500:hover { background-color: #48bb78 !important; }
+.aqua-hover\:bg-green-600:hover { background-color: #38a169 !important; }
+
+.aqua-hover\:bg-purple-100:hover { background-color: #faf5ff !important; }
+.aqua-hover\:bg-purple-200:hover { background-color: #e9d8fd !important; }
+.aqua-hover\:bg-purple-300:hover { background-color: #d6bcfa !important; }
+.aqua-hover\:bg-purple-400:hover { background-color: #b794f6 !important; }
+.aqua-hover\:bg-purple-500:hover { background-color: #9f7aea !important; }
+.aqua-hover\:bg-purple-600:hover { background-color: #805ad5 !important; }
+
+/* Hover Text Colors */
+.aqua-hover\:text-blue-500:hover { color: #4299e1 !important; }
+.aqua-hover\:text-red-500:hover { color: #e53e3e !important; }
+.aqua-hover\:text-green-500:hover { color: #48bb78 !important; }
+.aqua-hover\:text-purple-500:hover { color: #9f7aea !important; }
+.aqua-hover\:text-white:hover { color: #ffffff !important; }
+.aqua-hover\:text-black:hover { color: #000000 !important; }
+
+/* Hover Border Colors */
+.aqua-hover\:border-blue-500:hover { border-color: #4299e1 !important; }
+.aqua-hover\:border-red-500:hover { border-color: #e53e3e !important; }
+.aqua-hover\:border-green-500:hover { border-color: #48bb78 !important; }
+.aqua-hover\:border-purple-500:hover { border-color: #9f7aea !important; }
+
+/* ========================================================================== 
+   FOCUS COLOR UTILITIES
+   ========================================================================== */
+
+/* Focus Ring Colors */
+.aqua-focus\:ring-blue-500:focus { 
+    --tw-ring-color: #4299e1 !important; 
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3) !important;
+}
+.aqua-focus\:ring-red-500:focus { 
+    --tw-ring-color: #e53e3e !important; 
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.3) !important;
+}
+.aqua-focus\:ring-green-500:focus { 
+    --tw-ring-color: #48bb78 !important; 
+    box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.3) !important;
+}
+.aqua-focus\:ring-purple-500:focus { 
+    --tw-ring-color: #9f7aea !important; 
+    box-shadow: 0 0 0 3px rgba(159, 122, 234, 0.3) !important;
+}
+
+/* Focus Border Colors */
+.aqua-focus\:border-blue-500:focus { border-color: #4299e1 !important; }
+.aqua-focus\:border-red-500:focus { border-color: #e53e3e !important; }
+.aqua-focus\:border-green-500:focus { border-color: #48bb78 !important; }
+.aqua-focus\:border-purple-500:focus { border-color: #9f7aea !important; }
+
+/* ========================================================================== 
+   GRADIENT UTILITIES
+   ========================================================================== */
+
+/* Blue Gradients */
+.aqua-bg-gradient-blue { 
+    background: linear-gradient(135deg, #4299e1, #3182ce) !important; 
+}
+.aqua-bg-gradient-blue-light { 
+    background: linear-gradient(135deg, #90cdf4, #63b3ed) !important; 
+}
+.aqua-bg-gradient-blue-dark { 
+    background: linear-gradient(135deg, #3182ce, #2a4365) !important; 
+}
+
+/* Red Gradients */
+.aqua-bg-gradient-red { 
+    background: linear-gradient(135deg, #e53e3e, #c53030) !important; 
+}
+.aqua-bg-gradient-red-light { 
+    background: linear-gradient(135deg, #fc8181, #f56565) !important; 
+}
+.aqua-bg-gradient-red-dark { 
+    background: linear-gradient(135deg, #c53030, #63171b) !important; 
+}
+
+/* Green Gradients */
+.aqua-bg-gradient-green { 
+    background: linear-gradient(135deg, #48bb78, #38a169) !important; 
+}
+.aqua-bg-gradient-green-light { 
+    background: linear-gradient(135deg, #9ae6b4, #68d391) !important; 
+}
+.aqua-bg-gradient-green-dark { 
+    background: linear-gradient(135deg, #38a169, #22543d) !important; 
+}
+
+/* Purple Gradients */
+.aqua-bg-gradient-purple { 
+    background: linear-gradient(135deg, #9f7aea, #805ad5) !important; 
+}
+.aqua-bg-gradient-purple-light { 
+    background: linear-gradient(135deg, #d6bcfa, #b794f6) !important; 
+}
+.aqua-bg-gradient-purple-dark { 
+    background: linear-gradient(135deg, #805ad5, #44337a) !important; 
+}
+
+/* Yellow Gradients */
+.aqua-bg-gradient-yellow { 
+    background: linear-gradient(135deg, #ecc94b, #d69e2e) !important; 
+}
+.aqua-bg-gradient-yellow-light { 
+    background: linear-gradient(135deg, #faf089, #f6e05e) !important; 
+}
+.aqua-bg-gradient-yellow-dark { 
+    background: linear-gradient(135deg, #d69e2e, #744210) !important; 
+}
+
+/* Pink Gradients */
+.aqua-bg-gradient-pink { 
+    background: linear-gradient(135deg, #ed64a6, #d53f8c) !important; 
+}
+.aqua-bg-gradient-pink-light { 
+    background: linear-gradient(135deg, #fbb6ce, #f687b3) !important; 
+}
+.aqua-bg-gradient-pink-dark { 
+    background: linear-gradient(135deg, #d53f8c, #702459) !important; 
+}
+
+/* Multi-color Gradients */
+.aqua-bg-gradient-rainbow { 
+    background: linear-gradient(135deg, #4299e1, #9f7aea, #ed64a6, #ecc94b) !important; 
+}
+.aqua-bg-gradient-sunset { 
+    background: linear-gradient(135deg, #fbb6ce, #f687b3, #ecc94b, #d69e2e) !important; 
+}
+.aqua-bg-gradient-ocean { 
+    background: linear-gradient(135deg, #4299e1, #48bb78, #38a169) !important; 
+}
+
+/* ========================================================================== 
+   CUSTOM CSS VARIABLES FOR DYNAMIC COLORS
+   ========================================================================== */
+
+.aqua-custom-color {
+    background-color: var(--custom-bg-color, rgba(255, 255, 255, 0.15));
+    border-color: var(--custom-border-color, rgba(255, 255, 255, 0.3));
+    color: var(--custom-text-color, #ffffff);
+}
+
+/* Usage example with CSS variables:
+   .my-component {
+     --custom-bg-color: rgba(66, 153, 225, 0.15);
+     --custom-border-color: rgba(66, 153, 225, 0.4);
+     --custom-text-color: #4299e1;
+   }
+*/
+
+/* ========================================================================== 
+   SEMANTIC COLOR UTILITIES
+   ========================================================================== */
+
+/* Success Colors */
+.aqua-bg-success { background-color: #48bb78 !important; }
+.aqua-text-success { color: #48bb78 !important; }
+.aqua-border-success { border-color: #48bb78 !important; }
+.aqua-glass-success { 
+    background: rgba(72, 187, 120, 0.15) !important;
+    border-color: rgba(72, 187, 120, 0.4) !important;
+}
+
+/* Warning Colors */
+.aqua-bg-warning { background-color: #ecc94b !important; }
+.aqua-text-warning { color: #d69e2e !important; }
+.aqua-border-warning { border-color: #ecc94b !important; }
+.aqua-glass-warning { 
+    background: rgba(236, 201, 75, 0.15) !important;
+    border-color: rgba(236, 201, 75, 0.4) !important;
+}
+
+/* Error Colors */
+.aqua-bg-error { background-color: #e53e3e !important; }
+.aqua-text-error { color: #e53e3e !important; }
+.aqua-border-error { border-color: #e53e3e !important; }
+.aqua-glass-error { 
+    background: rgba(229, 62, 62, 0.15) !important;
+    border-color: rgba(229, 62, 62, 0.4) !important;
+}
+
+/* Info Colors */
+.aqua-bg-info { background-color: #4299e1 !important; }
+.aqua-text-info { color: #4299e1 !important; }
+.aqua-border-info { border-color: #4299e1 !important; }
+.aqua-glass-info { 
+    background: rgba(66, 153, 225, 0.15) !important;
+    border-color: rgba(66, 153, 225, 0.4) !important;
+}
+
+/* ========================================================================== 
+   COMPONENT SPECIFIC COLOR OVERRIDES
+   ========================================================================== */
+
+/* Navigation Colors */
+.aqua-nav-blue { 
+    background: rgba(66, 153, 225, 0.1) !important;
+    border-color: rgba(66, 153, 225, 0.3) !important;
+}
+
+.aqua-nav-red { 
+    background: rgba(229, 62, 62, 0.1) !important;
+    border-color: rgba(229, 62, 62, 0.3) !important;
+}
+
+.aqua-nav-green { 
+    background: rgba(72, 187, 120, 0.1) !important;
+    border-color: rgba(72, 187, 120, 0.3) !important;
+}
+
+/* Modal Colors */
+.aqua-modal-blue .aqua-modal-content { 
+    background: rgba(66, 153, 225, 0.15) !important;
+    border-color: rgba(66, 153, 225, 0.4) !important;
+}
+
+.aqua-modal-red .aqua-modal-content { 
+    background: rgba(229, 62, 62, 0.15) !important;
+    border-color: rgba(229, 62, 62, 0.4) !important;
+}
+
+.aqua-modal-green .aqua-modal-content { 
+    background: rgba(72, 187, 120, 0.15) !important;
+    border-color: rgba(72, 187, 120, 0.4) !important;
+}
+
+/* ========================================================================== 
+   DARK MODE SUPPORT
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    /* Dark mode color adjustments */
+    .aqua-text-white { color: #f7fafc !important; }
+    .aqua-text-black { color: #1a202c !important; }
+    
+    .aqua-bg-white { background-color: #2d3748 !important; }
+    .aqua-bg-black { background-color: #1a202c !important; }
+    
+    /* Adjust glass effects for dark mode */
+    .aqua-glass-light { 
+        background: rgba(255, 255, 255, 0.1) !important; 
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .aqua-glass-dark { 
+        background: rgba(0, 0, 0, 0.3) !important; 
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+}
+
+/* Manual dark mode class */
+.dark .aqua-text-white { color: #f7fafc !important; }
+.dark .aqua-text-black { color: #1a202c !important; }
+.dark .aqua-bg-white { background-color: #2d3748 !important; }
+.dark .aqua-bg-black { background-color: #1a202c !important; }
+
+/* ========================================================================== 
+   END OF AQUA COLOR UTILITIES
+   ========================================================================== */
