@@ -3,9 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageModal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
     const closeBtn = document.querySelector('.close-btn');
-    const loadingSpinner = document.querySelector('.loading-spinner'); // スピナーの要素を取得
+    const loadingSpinner = document.querySelector('.loading-spinner');
 
-    fetch('get_photos.php') // PHPスクリプトのパス
+    // 1. list.json から画像リストを取得
+    fetch('list.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);
@@ -15,51 +16,52 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(imageUrls => {
             if (imageUrls.error) {
                 console.error('Error from server:', imageUrls.error);
-                photosContainer.innerHTML = '<p>写真の読み込みに失敗しました。ディレクトリが見つからない可能性があります。</p>';
+                photosContainer.innerHTML = '<p>写真の読み込みに失敗しました。</p>';
                 return;
             }
             if (imageUrls.length === 0) {
                 photosContainer.innerHTML = '<p>表示できる写真がありません。</p>';
                 return;
             }
-            console.log('写真の読み込みに成功:', imageUrls);
+
+            // 2. 取得したパスの配列をループ処理
             imageUrls.forEach(url => {
                 const photoBlock = document.createElement('div');
-                photoBlock.className = 'photo-block modal'; // modalクラスを追加
+                photoBlock.className = 'photo-block modal';
 
                 const imgElement = document.createElement('img');
-                imgElement.src = url;
+                imgElement.src = url; // 例: ./photos/low/Low_VRChat_..._c.jpg
                 imgElement.alt = '思い出の写真';
+                imgElement.loading = 'lazy'; // パフォーマンス向上のため遅延読み込みを追加
 
                 photoBlock.appendChild(imgElement);
                 photosContainer.appendChild(photoBlock);
 
-                // 各photoBlockにクリックイベントリスナーを追加
+                // 3. クリック時の高画質画像への変換ロジック
                 photoBlock.addEventListener('click', () => {
-                    const imgSrc = imgElement.src.replace("/low/Low_","/comp/").replace("_c.jpg",".jpg");
+                    // パスの置換ルール:
+                    // /low/Low_ -> /comp/ に変更
+                    // _c.jpg -> .jpg に変更（存在する場合のみ）
+                    const imgSrc = url
+                        .replace('/low/Low_', '/comp/')
+                        .replace('_c.jpg', '.jpg');
 
-                    // 1. モーダルを表示
+                    // モーダル表示処理
                     imageModal.style.display = 'flex';
-                    
-                    // 2. スピナーを表示し、画像を非表示にする
                     loadingSpinner.style.display = 'block';
                     modalImage.style.display = 'none';
 
-                    // 3. 画像の読み込みが完了した時の処理
                     modalImage.onload = () => {
-                        loadingSpinner.style.display = 'none'; // スピナーを非表示
-                        modalImage.style.display = 'block';   // 画像を表示
+                        loadingSpinner.style.display = 'none';
+                        modalImage.style.display = 'block';
                     };
 
-                    // 4. 画像の読み込みエラー時の処理
                     modalImage.onerror = () => {
-                        console.error('モーダル画像の読み込みに失敗しました:', imgSrc);
-                        loadingSpinner.style.display = 'none'; // エラーでもスピナーは非表示
-                        modalImage.style.display = 'block'; // 画像を表示（壊れたアイコンが表示される）
-                        // 必要であれば、エラーメッセージの表示など
+                        console.error('高画質画像の読み込みに失敗しました:', imgSrc);
+                        loadingSpinner.style.display = 'none';
+                        modalImage.style.display = 'block';
                     };
                     
-                    // 5. modalImageのsrcを設定（画像の読み込みが開始される）
                     modalImage.src = imgSrc;
                 });
             });
@@ -69,23 +71,16 @@ document.addEventListener('DOMContentLoaded', function() {
             photosContainer.innerHTML = '<p>写真の読み込み中にエラーが発生しました。</p>';
         });
 
-    // モーダルを閉じる処理
-    closeBtn.addEventListener('click', () => {
+    // モーダルを閉じる共通関数
+    const closeModal = () => {
         imageModal.style.display = 'none';
-        // モーダルを閉じる際に、スピナーと画像表示をリセット
         loadingSpinner.style.display = 'none';
         modalImage.style.display = 'none';
-        modalImage.src = ''; // 次の表示のためにsrcをクリア
-    });
+        modalImage.src = ''; 
+    };
 
-    // モーダルの背景をクリックしても閉じる処理
+    closeBtn.addEventListener('click', closeModal);
     imageModal.addEventListener('click', (event) => {
-        if (event.target === imageModal) { // modal-overlay自体のクリックかチェック
-            imageModal.style.display = 'none';
-            // モーダルを閉じる際に、スピナーと画像表示をリセット
-            loadingSpinner.style.display = 'none';
-            modalImage.style.display = 'none';
-            modalImage.src = ''; // 次の表示のためにsrcをクリア
-        }
+        if (event.target === imageModal) closeModal();
     });
 });
