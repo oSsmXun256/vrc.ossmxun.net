@@ -2,8 +2,8 @@
   "profile": {
     "name": "お刺身くん",
     "avatarImage": "./img/avaters/0.8.1/aikon_at.png",
-    "introduction": "VRChatで活動しているお刺身くんです。",
-    "description": "主にVRChatで友達と遊んだり、イベントに参加したりしています。"
+    "introduction": "お刺身くんです。",
+    "description": "主に写真撮影、ワールド巡りをしてます。"
   },
   "sections": [
     {
@@ -11,9 +11,8 @@
       "title": "About",
       "icon": "👤",
       "content": [
-        "VRChatを中心に活動しています。",
-        "写真を撮ることが好きで、思い出をたくさん残しています。",
-        "いろんな人と交流するのが楽しみです。"
+        "Discordによくいます。",
+        "VRChatでは写真を撮るのが好きです。"
       ]
     },
     {
@@ -23,8 +22,7 @@
       "items": [
         "写真撮影",
         "ワールド巡り",
-        "友達との会話",
-        "イベント参加"
+        "友達との会話"
       ]
     },
     {
@@ -34,7 +32,7 @@
       "details": [
         {
           "label": "活動開始",
-          "value": "2024年"
+          "value": "2023年11月～"
         },
         {
           "label": "主な活動時間",
