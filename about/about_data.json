@@ -1,7 +1,7 @@
 {
   "profile": {
     "name": "お刺身くん",
-    "avatarImage": "./img/avaters/0.8.1/aikon_at.png",
+    "avatarImage": "../img/avaters/0.8.1/aikon_at.png",
     "introduction": "お刺身くんです。",
     "description": "主に写真撮影、ワールド巡りをしてます。"
   },
@@ -48,18 +48,15 @@
   "links": [
     {
       "name": "メインサイト",
-      "url": "https://ossmxun.net",
-      "icon": "🌐"
+      "url": "https://ossmxun.net"
     },
     {
       "name": "Twitter (X)",
-      "url": "https://x.com/os_vrc",
-      "icon": "🐦"
+      "url": "https://x.com/os_vrc"
     },
     {
       "name": "Bluesky",
-      "url": "https://bsky.app/profile/vrc.ossmxun.net",
-      "icon": "🦋"
+      "url": "https://bsky.app/profile/vrc.ossmxun.net"
     }
   ]
 }
