@@ -1,0 +1,67 @@
+{
+  "profile": {
+    "name": "お刺身くん",
+    "avatarImage": "./img/avaters/0.8.1/aikon_at.png",
+    "introduction": "VRChatで活動しているお刺身くんです。",
+    "description": "主にVRChatで友達と遊んだり、イベントに参加したりしています。"
+  },
+  "sections": [
+    {
+      "id": "about",
+      "title": "About",
+      "icon": "👤",
+      "content": [
+        "VRChatを中心に活動しています。",
+        "写真を撮ることが好きで、思い出をたくさん残しています。",
+        "いろんな人と交流するのが楽しみです。"
+      ]
+    },
+    {
+      "id": "interests",
+      "title": "好きなこと",
+      "icon": "💖",
+      "items": [
+        "写真撮影",
+        "ワールド巡り",
+        "友達との会話",
+        "イベント参加"
+      ]
+    },
+    {
+      "id": "vrchat",
+      "title": "VRChat Info",
+      "icon": "🎮",
+      "details": [
+        {
+          "label": "活動開始",
+          "value": "2024年"
+        },
+        {
+          "label": "主な活動時間",
+          "value": "夜間・週末"
+        },
+        {
+          "label": "よく行くワールド",
+          "value": "集会場、写真スポット"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "name": "メインサイト",
+      "url": "https://ossmxun.net",
+      "icon": "🌐"
+    },
+    {
+      "name": "Twitter (X)",
+      "url": "https://x.com/os_vrc",
+      "icon": "🐦"
+    },
+    {
+      "name": "Bluesky",
+      "url": "https://bsky.app/profile/vrc.ossmxun.net",
+      "icon": "🦋"
+    }
+  ]
+}
