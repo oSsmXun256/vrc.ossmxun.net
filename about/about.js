@@ -80,6 +80,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     html += '</div>';
                 }
 
+                // timeline配列がある場合
+                if (section.timeline && section.timeline.length > 0) {
+                    html += '<div class="aqua-space-y-3">';
+                    section.timeline.forEach(entry => {
+                        html += `
+                            <div class="aqua-flex aqua-gap-4 aqua-items-start">
+                                <span class="aqua-text-white aqua-opacity-70 aqua-font-semibold aqua-whitespace-nowrap">${entry.date}</span>
+                                <span class="aqua-text-white aqua-opacity-90">${entry.event}</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
                 html += '</div>';
             });
         }

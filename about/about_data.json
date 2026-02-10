@@ -43,6 +43,21 @@
           "value": "集会場、写真スポット"
         }
       ]
+    },
+    {
+      "id": "timeline",
+      "title": "活動の歩み",
+      "icon": "📅",
+      "timeline": [
+        {
+          "date": "2023年11月",
+          "event": "VRChat活動開始"
+        },
+        {
+          "date": "2025年3月",
+          "event": "個人サイト開設"
+        }
+      ]
     }
   ],
   "links": [
