@@ -63,14 +63,17 @@
   "links": [
     {
       "name": "メインサイト",
+      "icon": "🔗",
       "url": "https://ossmxun.net"
     },
     {
       "name": "Twitter (X)",
+      "icon": "🐦",
       "url": "https://x.com/os_vrc"
     },
     {
       "name": "Bluesky",
+      "icon": "🦋",
       "url": "https://bsky.app/profile/vrc.ossmxun.net"
     }
   ]
