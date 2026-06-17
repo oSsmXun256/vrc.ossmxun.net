@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="aqua.design.css">
     <link rel="stylesheet" href="aqua.style.css">
-    <link rel="stylesheet" href="aqua.color.css">
+    <link rel="stylesheet" href="aqua.effect.css">
 
     <style>
         /* index.htmlと統一したテーマ定義 */
@@ -19,6 +19,28 @@
             --aqua-glass-bg: rgba(255, 241, 242, 0.25);
             --aqua-glass-border: rgba(255, 255, 255, 0.4);
         }
+        /* AquaCSS 2.0 互換差分: コンポーネント色がvar非依存になったためテーマ適用先を明示 */
+        .aqua-theme-pink .aqua-glass,
+        .aqua-theme-pink .aqua-glass-light,
+        .aqua-theme-pink .aqua-card,
+        .aqua-theme-pink .aqua-panel { background: var(--aqua-glass-bg); border-color: var(--aqua-glass-border); }
+        .aqua-glass-pink-medium { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.45); backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2); box-shadow: var(--aqua-glass-shadow), var(--aqua-glass-inner-shadow); }
+        .aqua-no-underline { text-decoration: none !important; }
+        .aqua-hover\:opacity-100:hover { opacity: 1 !important; }
+        .aqua-hover\:scale-105:hover { transform: scale(1.05) !important; }
+        .aqua-object-contain { object-fit: contain !important; }
+        .aqua-whitespace-nowrap { white-space: nowrap !important; }
+        .aqua-text-pink-400 { color: var(--aqua-primary-light) !important; }
+        .aqua-mb-2{margin-bottom:.5rem!important}.aqua-mb-4{margin-bottom:1rem!important}.aqua-mb-6{margin-bottom:1.5rem!important}.aqua-mb-8{margin-bottom:2rem!important}.aqua-mb-10{margin-bottom:2.5rem!important}
+        .aqua-mt-4{margin-top:1rem!important}.aqua-mt-12{margin-top:3rem!important}
+        .aqua-p-3{padding:.75rem!important}
+        .aqua-gap-3{gap:.75rem!important}
+        .aqua-opacity-70{opacity:.7!important}.aqua-opacity-90{opacity:.9!important}
+        .aqua-w-6{width:1.5rem!important}.aqua-h-6{height:1.5rem!important}
+        .aqua-w-8{width:2rem!important}.aqua-h-8{height:2rem!important}
+        .aqua-w-32{width:8rem!important}.aqua-h-32{height:8rem!important}
+        .aqua-text-3xl{font-size:1.875rem!important}.aqua-text-4xl{font-size:2.25rem!important}
+        .aqua-rounded-3xl{border-radius:2.5rem!important}
 
         /* 写真グリッドの調整 (Aquaのクラスで賄えない部分) */
         .photos {
@@ -77,10 +99,10 @@
         }
     </style>
 
-    <link rel="icon" type="image/png" href="./img/avaters/0.8.1/aikon_t.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="./img/avaters/0.8.1/aikon_t.png">
+    <link rel="icon" type="image/png" href="../img/avaters/0.8.1/aikon_t.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="../img/avaters/0.8.1/aikon_t.png">
 </head>
-<body class="aqua-reset aqua-theme-pink aqua-flex aqua-flex-col aqua-items-center aqua-p-4">
+<body class="aqua-theme-pink aqua-flex aqua-flex-col aqua-items-center aqua-p-4">
 
     <nav class="aqua-glass aqua-p-4 aqua-rounded-2xl aqua-flex aqua-gap-6 aqua-mb-10 aqua-mt-4">
         <a href="https://vrc.ossmxun.net/" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-100">Home</a>
@@ -90,7 +112,6 @@
     </nav>
 
     <main class="aqua-glass aqua-p-8 aqua-rounded-3xl aqua-container-md aqua-text-center">
-        <a href="https://vrc.ossmxun.net/about" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-80 aqua-hover:opacity-100">About</a>
         <h1 class="aqua-text-white aqua-text-3xl aqua-mb-2 aqua-font-bold">Memories</h1>
         <p class="aqua-text-white aqua-opacity-80 aqua-mb-8">VRChatでの思い出の写真たち</p>
 

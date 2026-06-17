@@ -1,871 +1,639 @@
 /*!
- * aqua.design.css v1.3.0
- * Liquid Glass Design System - Core Design Components
- * デザイン要素とコンポーネントの定義
+ * aqua.design.css V2.0
+ * Design Layer - Core Components & Theme System
+ *
+ * Copyright (c) 2026 oSsmXun Design, All rights reserved.
  */
 
-/* ========================================================================== 
+/* ==========================================================================
    CSS VARIABLES & THEME SYSTEM
    ========================================================================== */
 
-*, *::before, *::after {
-    box-sizing: border-box;
-}
-
 :root {
-    /* Primary Color System (default = blue) */
-    /* --aqua-primary: #4e70df;
+    /* Color System */
+    --aqua-primary: #4e70df;
     --aqua-primary-light: #6b8aff;
-    --aqua-primary-dark: #3355cc; */
-    
-    /* Text Colors */
+    --aqua-primary-dark: #3355cc;
+    --aqua-grad-1: #667eea;
+    --aqua-grad-2: #9f85d6;
+    --aqua-grad-3: #8bb9ff;
     --aqua-text-primary: #17335e;
     --aqua-text-secondary: #ffffff;
     --aqua-text-muted: rgba(255, 255, 255, 0.7);
-    --aqua-text-muted-black: rgba(0, 0, 0, 0.6);
     --aqua-text-inverse: #2c3e50;
-
-    /* Normal Text Colors */
-    --aqua-text-white: #ffffff;
-    --aqua-text-black: #333333;
     
     /* Glass Effect Variables */
-    --aqua-glass-bg: rgba(255, 255, 255, 0.15);
-    --aqua-glass-bg-light: rgba(255, 255, 255, 0.25);
+    --aqua-glass-bg: rgba(255, 255, 255, 0.1);
+    --aqua-glass-bg-light: rgba(255, 255, 255, 0.16);
     --aqua-glass-bg-dark: rgba(0, 0, 0, 0.15);
-    --aqua-glass-border: rgba(255, 255, 255, 0.8);
-    --aqua-glass-border-light: rgba(255, 255, 255, 0.9);
-    --aqua-glass-border-dark: rgba(83, 83, 83, 0.6);
-    --aqua-glass-shadow-primary: rgba(31, 38, 135, 0.2);
-    --aqua-glass-shadow-secondary: rgba(255, 255, 255, 0.3);
-    --aqua-glass-after-bg: rgba(255, 255, 255, 0.1);
+    --aqua-glass-border: rgba(255, 255, 255, 0.45);
+    --aqua-glass-border-light: rgba(255, 255, 255, 0.6);
+    --aqua-glass-border-dark: rgba(255, 255, 255, 0.3);
+    --aqua-glass-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    --aqua-glass-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    --aqua-glass-blur: blur(22px) saturate(1.2);
     
-    /* Background Gradients */
-    --aqua-gradient-primary: linear-gradient(135deg, #667eea, #9f85d6);
-    --aqua-gradient-secondary: linear-gradient(135deg, #8bb9ff, #a6c1ee);
-    --aqua-grad-1: #667eea;
-    --aqua-grad-2: #764ba2;
-    --aqua-grad-3: #8bb9ff;
+    /* Gradients */
+    --aqua-gradient-primary: linear-gradient(135deg, var(--aqua-grad-1), var(--aqua-grad-2));
+    --aqua-gradient-secondary: linear-gradient(135deg, var(--aqua-grad-2), var(--aqua-grad-3));
     
     /* Typography */
     --aqua-font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --aqua-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
     
     /* Shadows */
-    --aqua-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --aqua-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --aqua-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --aqua-shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
     --aqua-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --aqua-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --aqua-shadow-glass: 0 8px 32px var(--aqua-glass-shadow-primary);
-    --aqua-shadow-glass-hover: 0 12px 40px var(--aqua-glass-shadow-primary);
     
-    /* Border Radius */
-    --aqua-radius-xs: 0.25rem;
-    --aqua-radius-sm: 0.5rem;
-    --aqua-radius-md: 1rem;
-    --aqua-radius-lg: 2rem;
-    --aqua-radius-xl: 3rem;
-    --aqua-radius-full: 50%;
-    
-    /* Spacing System */
-    --aqua-space-px: 1px;
-    --aqua-space-0: 0;
-    --aqua-space-1: 0.25rem;
-    --aqua-space-2: 0.5rem;
-    --aqua-space-3: 0.75rem;
-    --aqua-space-4: 1rem;
-    --aqua-space-5: 1.25rem;
-    --aqua-space-6: 1.5rem;
-    --aqua-space-8: 2rem;
-    --aqua-space-10: 2.5rem;
-    --aqua-space-12: 3rem;
-    --aqua-space-16: 4rem;
-    --aqua-space-20: 5rem;
-    --aqua-space-24: 6rem;
-    --aqua-space-32: 8rem;
-    
-    /* Transitions */
-    --aqua-transition-fast: 0.15s ease;
-    --aqua-transition-base: 0.3s ease;
-    --aqua-transition-slow: 0.5s ease;
-    
-    /* Blur Effects */
-    --aqua-blur-sm: blur(4px);
-    --aqua-blur-md: blur(8px);
-    --aqua-blur-lg: blur(16px);
-    --aqua-blur-xl: blur(24px);
+    /* Radius */
+    --aqua-radius-sm: 4px;
+    --aqua-radius-md: 8px;
+    --aqua-radius-lg: 12px;
+    --aqua-radius-xl: 16px;
+    --aqua-radius-pill: 999px;
 }
 
-/* ========================================================================== 
-   THEME VARIATIONS
+/* ==========================================================================
+   BASE STYLES
    ========================================================================== */
 
-/* テーマが適用されていない場合のデフォルトスタイル */
-.aqua-reset {
-    color: var(--aqua-text-secondary);
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #f9b7db;
     font-family: var(--aqua-font-family);
-    line-height: 1.6;
-    color: var(--aqua-text-secondary);
-    background: var(--aqua-gradient-primary);
-    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* デフォルトテーマ */
-.aqua-theme-default {
-    --aqua-primary-bg: #4e70df;
-    --aqua-text-primary: #17335e;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #667eea;
-    --aqua-grad-2: #764ba2;
-}
-
-.aqua-theme-red {
-    --aqua-primary-bg: #f28b82;
-    --aqua-text-primary: #5a2b2b;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #ff8a7e;
-    --aqua-grad-2: #ff6262;
-}
-
-.aqua-theme-green {
-    --aqua-primary-bg: #80cfa9;
-    --aqua-text-primary: #1f4037;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #56ab8d;
-    --aqua-grad-2: #388e79;
-}
-
-.aqua-theme-purple {
-    --aqua-primary-bg: #9d4edd;
-    --aqua-text-primary: #3d0f5e;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #b388eb;
-    --aqua-grad-2: #8e44ad;
-}
-
-.aqua-theme-orange {
-    --aqua-primary-bg: #ffb47b;
-    --aqua-text-primary: #5a3c24;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #ff8c42;
-    --aqua-grad-2: #ff6700;
-}
-
-.aqua-theme-cyan {
-    --aqua-primary-bg: #06d6a0;
-    --aqua-text-primary: #023020;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #118ab2;
-    --aqua-grad-2: #06ffa5;
-}
-
-.aqua-theme-black {
-    --aqua-primary-bg: #2d3436;
-    --aqua-text-primary: #ddd;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #636e72;
-    --aqua-grad-2: #2d3436;
-}
-
-.aqua-theme-pink {
-    --aqua-primary-bg: #f7a8b8;
-    --aqua-text-primary: #5a2b3c;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #ff8fab;
-    --aqua-grad-2: #fb6f92;
-}
-
-.aqua-theme-sky {
-    --aqua-primary-bg: #87ceeb;
-    --aqua-text-primary: #2a3d5e;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #64b5f6;
-    --aqua-grad-2: #42a5f5;
-}
-
-.aqua-theme-lavender {
-    --aqua-primary-bg: #c5a6e5;
-    --aqua-text-primary: #3e2b5e;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #ba9ddf;
-    --aqua-grad-2: #ab82d1;
-}
-
-.aqua-theme-mint {
-    --aqua-primary-bg: #a8e6cf;
-    --aqua-text-primary: #20493a;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #7fcdb5;
-    --aqua-grad-2: #60bca3;
-}
-
-.aqua-theme-sand {
-    --aqua-primary-bg: #f6d6a8;
-    --aqua-text-primary: #5a4630;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #eacda3;
-    --aqua-grad-2: #d6ae7b;
-}
-
-.aqua-theme-slate {
-    --aqua-primary-bg: #95a5a6;
-    --aqua-text-primary: #2c3e50;
-    --aqua-text-secondary: #ffffff;
-    --aqua-grad-1: #8395a7;
-    --aqua-grad-2: #708090;
-}
-
-/* ========================================================================== 
-   LIQUID GLASS EFFECTS
+/* ==========================================================================
+   GLASS COMPONENT - Core Glass Effect
    ========================================================================== */
 
 .aqua-glass {
-    position: relative;
-    background: var(--aqua-glass-bg);
-    backdrop-filter: var(--aqua-blur-md) saturate(180%);
-    border: 1px solid var(--aqua-glass-border);
-    border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-glass), 
-                inset 0 4px 20px var(--aqua-glass-shadow-secondary);
-    transition: all var(--aqua-transition-base);
-}
-
-.aqua-glass::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--aqua-glass-after-bg);
-    border-radius: inherit;
-    backdrop-filter: var(--aqua-blur-sm);
-    box-shadow: inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-                inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
-    z-index: -1;
-    filter: var(--aqua-blur-sm) drop-shadow(10px 4px 6px black) brightness(115%);
-    pointer-events: none;
-}
-
-.aqua-glass:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--aqua-shadow-glass-hover);
-}
-
-/* Glass Variants */
-.aqua-glass-light { 
-    background: var(--aqua-glass-bg-light); 
-
-    position: relative;
-    backdrop-filter: var(--aqua-blur-md) saturate(180%);
-    border: 1px solid var(--aqua-glass-border-light);
-    border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-glass), 
-                inset 0 4px 20px var(--aqua-glass-shadow-secondary);
-    transition: all var(--aqua-transition-base);
-}
-
-.aqua-glass-light::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--aqua-glass-after-bg);
-    border-radius: inherit;
-    backdrop-filter: var(--aqua-blur-sm);
-    box-shadow: inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-                inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
-    z-index: -1;
-    filter: var(--aqua-blur-sm) drop-shadow(10px 4px 6px black) brightness(115%);
-    pointer-events: none;
-}
-
-.aqua-glass-light:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--aqua-shadow-glass-hover);
-}
-
-.aqua-glass-dark { 
-    background: var(--aqua-glass-bg-dark); 
-
-    position: relative;
-    backdrop-filter: var(--aqua-blur-md) saturate(180%);
-    border: 1px solid var(--aqua-glass-border-dark);
-    border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-glass), 
-                inset 0 4px 20px var(--aqua-glass-shadow-secondary);
-    transition: all var(--aqua-transition-base);
-}
-
-.aqua-glass-dark::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--aqua-glass-after-bg);
-    border-radius: inherit;
-    backdrop-filter: var(--aqua-blur-sm);
-    box-shadow: inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-                inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
-    z-index: -1;
-    filter: var(--aqua-blur-sm) drop-shadow(10px 4px 6px black) brightness(115%);
-    pointer-events: none;
-}
-
-.aqua-glass-dark:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--aqua-shadow-glass-hover);
-}
-
-.aqua-glass-colored { 
-    background: rgba(78, 112, 223, 0.15); 
-
-    position: relative;
-    backdrop-filter: var(--aqua-blur-md) saturate(180%);
-    border: 1px solid rgba(78, 112, 223, 0.8);
-    border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-glass), 
-                inset 0 4px 20px var(--aqua-glass-shadow-secondary);
-    transition: all var(--aqua-transition-base);
-}
-
-.aqua-glass-colored::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--aqua-glass-after-bg);
-    border-radius: inherit;
-    backdrop-filter: var(--aqua-blur-sm);
-    box-shadow: inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-                inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
-    z-index: -1;
-    filter: var(--aqua-blur-sm) drop-shadow(10px 4px 6px black) brightness(115%);
-    pointer-events: none;
-}
-
-.aqua-glass-colored:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--aqua-shadow-glass-hover);
-}
-
-.aqua-glass-frosted {
-    backdrop-filter: var(--aqua-blur-lg) saturate(200%);
     background: rgba(255, 255, 255, 0.1);
-
-    position: relative;
-    border: 1px solid var(--aqua-glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.45);
     border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-glass), 
-                inset 0 4px 20px var(--aqua-glass-shadow-secondary);
-    transition: all var(--aqua-transition-base);
+    box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    position: relative;
+    overflow: hidden;
 }
 
-.aqua-glass-frosted::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--aqua-glass-after-bg);
-    border-radius: inherit;
-    backdrop-filter: var(--aqua-blur-sm);
-    box-shadow: inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-                inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
-    opacity: 0.6;
-    z-index: -1;
-    filter: var(--aqua-blur-sm) drop-shadow(10px 4px 6px black) brightness(115%);
-    pointer-events: none;
+.aqua-glass-light {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
-.aqua-glass-frosted:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--aqua-shadow-glass-hover);
+.aqua-glass-dark {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* ========================================================================== 
-   BACKGROUND SYSTEM
+.aqua-glass-sm {
+    border-radius: var(--aqua-radius-md);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+}
+
+.aqua-glass-lg {
+    border-radius: var(--aqua-radius-xl);
+    box-shadow: 
+        0 32px 80px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(30px) saturate(1.35);
+    -webkit-backdrop-filter: blur(30px) saturate(1.35);
+}
+
+/* ==========================================================================
+   LIQUID GLASS MODE - paired with AquaGlass WebGL canvas (aqua.glass.js)
+   The lens refraction is rendered into #aqua-glcanvas behind these elements;
+   disable native blur/background so only the WebGL output shows through.
    ========================================================================== */
 
-.aqua-bg-gradient {
-    background: var(--aqua-gradient-primary);
-    background-size: 400% 400%;
-    animation: aqua-gradient-shift 8s ease infinite;
-    min-height: 100vh;
+#aqua-glcanvas {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
 }
 
-.aqua-bg-gradient-static {
-    background: var(--aqua-gradient-primary);
+.aqua-glass-liquid {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    border: none;
+    border-radius: 34px;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.45),
+        0 1px 12px rgba(0, 0, 0, 0.25);
 }
 
-.aqua-bg-gradient-secondary {
-    background: var(--aqua-gradient-secondary);
-}
-
-@keyframes aqua-gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* ========================================================================== 
-   COMPONENT STYLES
+/* ==========================================================================
+   BUTTON COMPONENTS
    ========================================================================== */
 
-/* Profile Component */
-.aqua-profile {
-    color: var(--aqua-text-secondary);
-    text-align: center;
-}
-
-.aqua-profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: var(--aqua-radius-full);
-    border: 4px solid var(--aqua-text-secondary);
-    background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
-    backdrop-filter: var(--aqua-blur-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    margin: 0 auto var(--aqua-space-4);
-    transition: all var(--aqua-transition-base);
-}
-
-.aqua-profile-avatar:hover {
-    transform: scale(1.05);
-    border-color: var(--aqua-primary);
-}
-
-/* 基本 */
 .aqua-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem 2rem;
-    border-radius: 9999px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.5);
-    min-width: 140px;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.aqua-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.aqua-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.aqua-btn-primary { background: linear-gradient(135deg, var(--aqua-grad-1), var(--aqua-grad-2));
-    border: 1px solid rgba(255,255,255,.3);
-}
-.aqua-btn-primary:hover {
-    border-color: rgba(255,255,255,.7);
-}
-
-.aqua-btn-secondary {
-    background: rgba(255,255,255,.2);
-    border: 1px solid rgba(255,255,255,.3);
-}
-.aqua-btn-secondary:hover {
-    border-color: rgba(255,255,255,.7);
-}
-
-.aqua-btn-outline {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,.3);
-}
-.aqua-btn-outline:hover {
-    background: rgba(255,255,255,.15);
-    border-color: rgba(255,255,255,.7);
-}
-
-.aqua-btn-ghost {
-    background: transparent;
+    gap: 8px;
+    padding: 10px 16px;
     border: none;
-    box-shadow: none;
+    border-radius: var(--aqua-radius-lg);
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.aqua-btn-primary {
+    background: var(--aqua-primary);
+    color: white;
+}
+
+.aqua-btn-primary:hover {
+    background: var(--aqua-primary-light);
+}
+
+.aqua-btn-primary:active {
+    transform: translateY(1px) scale(0.98);
 }
 
 .aqua-btn-glass {
-    background: var(--aqua-glass-bg);
-    border-color: var(--aqua-glass-border);
-    backdrop-filter: var(--aqua-blur-lg);
-}
-
-/* Card System */
-.aqua-card {
-    background: var(--aqua-glass-bg);
-    backdrop-filter: var(--aqua-blur-md) saturate(180%);
-    border: 1px solid var(--aqua-glass-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
     border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-glass);
-    transition: all var(--aqua-transition-base);
-    overflow: hidden;
-    position: relative;
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none;
 }
 
-.aqua-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--aqua-shadow-glass-hover);
+.aqua-btn-glass:hover {
+    background: rgba(255, 255, 255, 0.16);
 }
 
-/* Form Elements */
-.aqua-input,
-.aqua-textarea,
-.aqua-select {
-    background: var(--aqua-glass-bg);
-    backdrop-filter: var(--aqua-blur-md);
-    border: 1px solid var(--aqua-glass-border);
-    border-radius: var(--aqua-radius-md);
-    color: var(--aqua-text-secondary);
-    font-family: var(--aqua-font-family);
-    font-size: 1rem;
-    transition: all var(--aqua-transition-base);
-    width: calc(99% - 0.74rem * 2);
+.aqua-btn-glass:active {
+    transform: translateY(1px) scale(0.98);
 }
 
-.aqua-input:focus,
-.aqua-textarea:focus,
-.aqua-select:focus {
+.aqua-btn-pill {
+    border-radius: var(--aqua-radius-pill);
+    padding: 10px 24px;
+}
+
+.aqua-btn-white {
+    background: white;
+    color: #0f1a2a;
+    font-weight: 800;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+
+.aqua-btn-white:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+/* Size variants */
+.aqua-btn-sm {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.aqua-btn-md {
+    padding: 10px 16px;
+    font-size: 15px;
+}
+
+.aqua-btn-lg {
+    padding: 12px 20px;
+    font-size: 16px;
+}
+
+/* ==========================================================================
+   INPUT COMPONENTS
+   ========================================================================== */
+
+.aqua-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 15px;
+    height: 46px;
+    color: white;
+    font-size: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--aqua-radius-pill);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.aqua-input input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
     outline: none;
-    border-color: var(--aqua-primary);
-    box-shadow: 0 0 0 3px rgba(78, 112, 223, 0.1);
-    background: rgba(255, 255, 255, 0.2);
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 600;
 }
 
-.aqua-input::placeholder,
-.aqua-textarea::placeholder {
-    color: var(--aqua-text-muted);
+.aqua-input input::placeholder {
+    color: rgba(255, 255, 255, 0.75);
 }
 
-.aqua-textarea {
-    resize: vertical;
-    min-height: 120px;
+.aqua-input-icon {
+    flex: 0 0 auto;
+    opacity: 0.95;
 }
 
-/* Label System */
-.aqua-label {
-    display: block;
-    color: var(--aqua-text-secondary);
-    font-weight: 500;
-    font-size: 0.875rem;
-    margin-bottom: var(--aqua-space-2);
+.aqua-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
 }
 
-/* Navigation */
-.aqua-nav {
-    background: var(--aqua-glass-bg);
-    backdrop-filter: var(--aqua-blur-lg);
-    border-bottom: 1px solid var(--aqua-glass-border);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
+/* ==========================================================================
+   CARD COMPONENTS
+   ========================================================================== */
 
-.aqua-nav-brand {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--aqua-text-secondary);
-    text-decoration: none;
-}
-
-.aqua-nav-link {
-    color: var(--aqua-text-secondary);
-    text-decoration: none;
-    padding: var(--aqua-space-2) var(--aqua-space-4);
-    border-radius: var(--aqua-radius-sm);
-    transition: all var(--aqua-transition-base);
-    position: relative;
-}
-
-.aqua-nav-link:hover {
+.aqua-card {
     background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-1px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--aqua-radius-lg);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
 }
 
-.aqua-nav-link.active {
-    background: rgba(255, 255, 255, 0.15);
+.aqua-card-header {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--aqua-glass-border);
+}
+
+.aqua-card-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.aqua-card-subtitle {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--aqua-text-muted);
+    font-weight: 600;
+}
+
+.aqua-card-body {
+    color: white;
+}
+
+/* ==========================================================================
+   PANEL COMPONENTS
+   ========================================================================== */
+
+.aqua-panel {
+    position: absolute;
+    padding: 28px 30px;
+    border-radius: 26px;
+    max-height: 92vh;
+    overflow-y: auto;
+    color: white;
+    z-index: 4;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+}
+
+.aqua-panel h1 {
+    margin: 0 0 10px;
+    font-size: clamp(20px, 1.8vw, 26px);
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.aqua-panel p.lead {
+    margin: 0 0 18px;
+    font-size: clamp(13px, 1.1vw, 15px);
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.92);
+    font-weight: 600;
+}
+
+.aqua-panel .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 9px;
+}
+
+/* ==========================================================================
+   SLIDER / RANGE COMPONENTS
+   ========================================================================== */
+
+.aqua-slider-container {
+    margin-bottom: 18px;
+}
+
+.aqua-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 7px;
+}
+
+.aqua-slider-label {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.aqua-slider-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 20px;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    margin-top: -7px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    border: none;
+}
+
+input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.45);
+    border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    border: none;
+}
+
+/* ==========================================================================
+   BADGE & LABEL COMPONENTS
+   ========================================================================== */
+
+.aqua-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--aqua-radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--aqua-primary);
+    color: white;
+}
+
+.aqua-badge-outline {
+    background: transparent;
+    border: 1px solid var(--aqua-primary);
     color: var(--aqua-primary);
 }
 
-/* Modal System */
-.aqua-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: var(--aqua-blur-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--aqua-transition-base);
-}
-
-.aqua-modal.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.aqua-modal-content {
-    background: var(--aqua-glass-bg);
-    backdrop-filter: var(--aqua-blur-xl);
+.aqua-badge-glass {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--aqua-radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
     border: 1px solid var(--aqua-glass-border);
-    border-radius: var(--aqua-radius-lg);
-    box-shadow: var(--aqua-shadow-xl);
-    max-width: 500px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    transform: scale(0.8);
-    transition: all var(--aqua-transition-base);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    position: relative;
+    overflow: hidden;
+    background: var(--aqua-glass-bg-light);
+    border-color: var(--aqua-glass-border);
 }
 
-.aqua-modal.active .aqua-modal-content {
-    transform: scale(1);
-}
-
-.aqua-modal-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.aqua-modal-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.aqua-modal-close {
-    background: none;
-    border: none;
-    color: var(--aqua-text-secondary);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: var(--aqua-space-2);
-    border-radius: var(--aqua-radius-full);
-    transition: all var(--aqua-transition-base);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.aqua-modal-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: rotate(90deg);
-}
-
-/* List Components */
-.aqua-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.aqua-list-item {
-    color: var(--aqua-text-secondary);
-    transition: all var(--aqua-transition-base);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.aqua-list-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(4px);
-}
-
-.aqua-list-item:last-child {
-    border-bottom: none;
-}
-
-/* ========================================================================== 
-   TYPOGRAPHY SYSTEM
+/* ==========================================================================
+   TEXT COMPONENTS
    ========================================================================== */
 
-.aqua-heading {
-    font-family: var(--aqua-font-family);
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--aqua-text-secondary);
-    margin-bottom: var(--aqua-space-4);
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+.aqua-text-primary {
+    color: var(--aqua-text-primary);
 }
 
-.aqua-text {
-    font-family: var(--aqua-font-family);
-    line-height: 1.6;
+.aqua-text-secondary {
     color: var(--aqua-text-secondary);
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-}
-
-.text-black {
-    color: var(--aqua-text-black);
-    text-shadow: 0.5px 0px 3.5px rgba(255, 255, 255, 0.8);
-}
-.text-white {
-    color: var(--aqua-text-white); 
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .aqua-text-muted {
     color: var(--aqua-text-muted);
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-}
-
-.aqua-text-muted-black {
-    color: var(--aqua-text-muted-black);
-    text-shadow: 0px 0px 3px rgba(255, 255, 255, 0.8);
 }
 
 .aqua-text-inverse {
     color: var(--aqua-text-inverse);
 }
 
-.aqua-code {
-    font-family: var(--aqua-font-mono);
-    background: rgba(0, 0, 0, 0.2);
-    padding: var(--aqua-space-1) var(--aqua-space-2);
-    border-radius: var(--aqua-radius-sm);
-    font-size: 0.875em;
-}
-
-/* ========================================================================== 
-   LOADING & ANIMATION COMPONENTS
-   ========================================================================== */
-
-.aqua-spinner {
-    width: 2rem;
-    height: 2rem;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--aqua-primary);
-    animation: aqua-spin 1s ease-in-out infinite;
-}
-
-@keyframes aqua-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.aqua-pulse {
-    animation: aqua-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes aqua-pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: .5;
-    }
-}
-
-/* ========================================================================== 
-   ACCESSIBILITY & FOCUS STATES
-   ========================================================================== */
-
-.aqua-focus:focus {
-    outline: 2px solid var(--aqua-primary);
-    outline-offset: 2px;
-}
-
-.aqua-sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-/* ========================================================================== 
-   RESET & BASE STYLES
-   ========================================================================== */
-
-.aqua-reset {
-    font-family: var(--aqua-font-family);
-    line-height: 1.6;
-    color: var(--aqua-text-secondary);
-    background: var(--aqua-gradient-primary);
-    min-height: 100vh;
+.aqua-heading-1 {
     margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
-.aqua-reset a {
-    color: inherit;
-    text-decoration: none;
+.aqua-heading-2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
 }
 
-.aqua-reset img {
-    max-width: 100%;
-    height: auto;
-    display: block;
+.aqua-heading-3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
 }
 
-.aqua-reset button,
-.aqua-reset input,
-.aqua-reset textarea,
-.aqua-reset select {
-    font-family: inherit;
-    font-size: inherit;
-}
-
-/* ========================================================================== 
-   PRINT STYLES
+/* ==========================================================================
+   DIVIDER COMPONENTS
    ========================================================================== */
 
-@media print {
-    .aqua-glass,
-    .aqua-bg-gradient,
-    .aqua-bg-gradient-static {
-        background: white !important;
-        color: black !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-    }
-    
-    .aqua-text-secondary,
-    .aqua-heading {
-        color: black !important;
-    }
-    
-    .aqua-btn {
-        border: 1px solid black !important;
-        background: white !important;
-        color: black !important;
-    }
-    
-    .aqua-modal {
-        position: static !important;
-        background: none !important;
-    }
+.aqua-divider {
+    border: none;
+    border-top: 1px solid var(--aqua-glass-border);
+    margin: 16px 0;
+}
+
+.aqua-divider-light {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   AVATAR COMPONENTS
+   ========================================================================== */
+
+.aqua-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.aqua-avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.aqua-avatar-lg {
+    width: 64px;
+    height: 64px;
+}
+
+/* ==========================================================================
+   GRID / LAYOUT COMPONENTS
+   ========================================================================== */
+
+.aqua-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.aqua-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.aqua-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.aqua-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aqua-flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ==========================================================================
+   CONTRIBUTION GRID (GitHub-like)
+   ========================================================================== */
+
+.aqua-contrib-grid {
+    display: inline-grid;
+    grid-template-columns: repeat(auto-fit, minmax(14px, 1fr));
+    gap: 3px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--aqua-radius-lg);
+}
+
+.aqua-contrib-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.aqua-contrib-cell.active {
+    background: var(--aqua-primary);
+    border-color: var(--aqua-primary-light);
+}
+
+/* ==========================================================================
+   SCROLLBAR STYLING
+   ========================================================================== */
+
+.aqua-scrollbar-styled::-webkit-scrollbar {
+    width: 8px;
+}
+
+.aqua-scrollbar-styled::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.aqua-scrollbar-styled::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.aqua-scrollbar-styled::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.aqua-scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.aqua-scrollbar-hidden::-webkit-scrollbar {
+    display: none;
 }

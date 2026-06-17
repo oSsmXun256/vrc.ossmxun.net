@@ -1,0 +1,555 @@
+/*!
+ * aqua.effect.css V2.0
+ * Effect Layer - Animations & Transitions
+ *
+ * Copyright (c) 2026 oSsmXun Design, All rights reserved.
+ */
+
+/* ==========================================================================
+   FADE ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes aqua-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.aqua-fade-in {
+    animation: aqua-fade-in 0.3s ease forwards;
+}
+
+.aqua-fade-out {
+    animation: aqua-fade-out 0.3s ease forwards;
+}
+
+/* ==========================================================================
+   SLIDE ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-slide-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes aqua-slide-in-down {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes aqua-slide-in-left {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes aqua-slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes aqua-slide-out-up {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes aqua-slide-out-down {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+@keyframes aqua-slide-out-left {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+}
+
+@keyframes aqua-slide-out-right {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+.aqua-slide-in-up { animation: aqua-slide-in-up 0.4s ease forwards; }
+.aqua-slide-in-down { animation: aqua-slide-in-down 0.4s ease forwards; }
+.aqua-slide-in-left { animation: aqua-slide-in-left 0.4s ease forwards; }
+.aqua-slide-in-right { animation: aqua-slide-in-right 0.4s ease forwards; }
+.aqua-slide-out-up { animation: aqua-slide-out-up 0.4s ease forwards; }
+.aqua-slide-out-down { animation: aqua-slide-out-down 0.4s ease forwards; }
+.aqua-slide-out-left { animation: aqua-slide-out-left 0.4s ease forwards; }
+.aqua-slide-out-right { animation: aqua-slide-out-right 0.4s ease forwards; }
+
+/* ==========================================================================
+   SCALE ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes aqua-scale-out {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes aqua-scale-up {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes aqua-scale-down {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+.aqua-scale-in { animation: aqua-scale-in 0.3s ease forwards; }
+.aqua-scale-out { animation: aqua-scale-out 0.3s ease forwards; }
+.aqua-scale-up { animation: aqua-scale-up 0.3s ease forwards; }
+.aqua-scale-down { animation: aqua-scale-down 0.3s ease forwards; }
+
+/* ==========================================================================
+   PULSE & GLOW ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes aqua-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(78, 112, 223, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(78, 112, 223, 0.8);
+    }
+}
+
+@keyframes aqua-glow-glass {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+}
+
+.aqua-pulse { animation: aqua-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.aqua-glow { animation: aqua-glow 2s ease-in-out infinite; }
+.aqua-glow-glass { animation: aqua-glow-glass 2s ease-in-out infinite; }
+
+/* ==========================================================================
+   BOUNCE ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes aqua-bounce-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(20px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+.aqua-bounce { animation: aqua-bounce 1s infinite; }
+.aqua-bounce-in { animation: aqua-bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
+
+/* ==========================================================================
+   GLASS MORPHISM EFFECTS
+   ========================================================================== */
+
+@keyframes aqua-glass-blur-in {
+    from {
+        background: rgba(255, 255, 255, 0);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        border-color: transparent;
+    }
+    to {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(22px) saturate(1.2);
+        -webkit-backdrop-filter: blur(22px) saturate(1.2);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+@keyframes aqua-glass-shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.aqua-glass-blur-in {
+    animation: aqua-glass-blur-in 0.5s ease forwards;
+}
+
+.aqua-glass-shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    background-size: 1000px 100%;
+    animation: aqua-glass-shimmer 3s infinite;
+}
+
+/* ==========================================================================
+   HOVER TRANSITION EFFECTS
+   ========================================================================== */
+
+.aqua-hover-lift {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.aqua-hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.aqua-hover-grow {
+    transition: all 0.3s ease;
+}
+
+.aqua-hover-grow:hover {
+    transform: scale(1.05);
+}
+
+.aqua-hover-dim {
+    transition: opacity 0.3s ease;
+}
+
+.aqua-hover-dim:hover {
+    opacity: 0.7;
+}
+
+.aqua-hover-bright {
+    transition: all 0.3s ease;
+}
+
+.aqua-hover-bright:hover {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(78, 112, 223, 0.4);
+}
+
+/* ==========================================================================
+   LOADING ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes aqua-spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.aqua-spin {
+    animation: aqua-spin 1s linear infinite;
+}
+
+.aqua-spin-slow {
+    animation: aqua-spin-slow 2s linear infinite;
+}
+
+@keyframes aqua-shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.aqua-shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 1000px 100%;
+    animation: aqua-shimmer 2s infinite;
+}
+
+/* ==========================================================================
+   BACKDROP EFFECTS
+   ========================================================================== */
+
+@keyframes aqua-backdrop-blur-in {
+    from {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+    to {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+}
+
+.aqua-backdrop-blur {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.aqua-backdrop-blur-md {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.aqua-backdrop-blur-lg {
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+}
+
+/* ==========================================================================
+   TRANSITION PRESETS
+   ========================================================================== */
+
+.aqua-transition-fast {
+    transition-duration: 0.15s;
+    transition-timing-function: ease;
+}
+
+.aqua-transition-base {
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+.aqua-transition-slow {
+    transition-duration: 0.5s;
+    transition-timing-function: ease;
+}
+
+.aqua-transition-slower {
+    transition-duration: 0.7s;
+    transition-timing-function: ease;
+}
+
+.aqua-ease-linear { transition-timing-function: linear; }
+.aqua-ease-in { transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+.aqua-ease-out { transition-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+.aqua-ease-in-out { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+.aqua-ease-bounce { transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+/* ==========================================================================
+   GRADIENT ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.aqua-gradient-animated {
+    background-size: 200% 200%;
+    animation: aqua-gradient-shift 3s ease infinite;
+}
+
+/* ==========================================================================
+   TEXT ANIMATIONS
+   ========================================================================== */
+
+@keyframes aqua-text-shimmer {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+.aqua-text-shimmer {
+    background: linear-gradient(
+        90deg,
+        currentColor 0%,
+        currentColor 40%,
+        rgba(255, 255, 255, 0.5) 50%,
+        currentColor 60%,
+        currentColor 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: aqua-text-shimmer 2s linear infinite;
+}
+
+/* ==========================================================================
+   INTERACTION STATES
+   ========================================================================== */
+
+.aqua-active {
+    transform: scale(0.98);
+}
+
+.aqua-focus-visible:focus-visible {
+    outline: 2px solid var(--aqua-primary);
+    outline-offset: 2px;
+}
+
+.aqua-disabled,
+.aqua-disabled:hover {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   MEDIA QUERY ANIMATIONS
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .aqua-glass-shimmer {
+        background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.05) 0%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.05) 100%
+        );
+    }
+}
+
+/* ==========================================================================
+   KEYFRAME DURATION VARIANTS
+   ========================================================================== */
+
+.aqua-duration-100 { animation-duration: 0.1s !important; }
+.aqua-duration-200 { animation-duration: 0.2s !important; }
+.aqua-duration-300 { animation-duration: 0.3s !important; }
+.aqua-duration-500 { animation-duration: 0.5s !important; }
+.aqua-duration-700 { animation-duration: 0.7s !important; }
+.aqua-duration-1000 { animation-duration: 1s !important; }
