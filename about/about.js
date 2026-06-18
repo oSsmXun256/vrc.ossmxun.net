@@ -38,11 +38,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.sections && data.sections.length > 0) {
             data.sections.forEach(section => {
                 html += `
-                    <div class="aqua-glass-light aqua-p-6 aqua-rounded-2xl aqua-mb-6">
-                        <h3 class="aqua-text-white aqua-text-xl aqua-font-bold aqua-mb-4 aqua-flex aqua-items-center aqua-gap-2">
-                            <span>${section.icon}</span>
-                            <span>${section.title}</span>
-                        </h3>
+                    <div class="aqua-glass aqua-glass-light aqua-p-6 aqua-rounded-2xl aqua-mb-6">
+                        <div class="aqua-flex aqua-items-center aqua-gap-3 aqua-mb-4">
+                            <span class="aqua-icon-circle">${section.icon}</span>
+                            <h3 class="aqua-text-white aqua-text-xl aqua-font-bold">${section.title}</h3>
+                        </div>
                 `;
 
                 // content配列がある場合
@@ -56,23 +56,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // items配列がある場合
                 if (section.items && section.items.length > 0) {
-                    html += '<ul class="aqua-text-white aqua-opacity-80 aqua-space-y-2">';
+                    html += '<div class="aqua-flex aqua-flex-wrap aqua-gap-2">';
                     section.items.forEach(item => {
-                        html += `<li class="aqua-flex aqua-items-center aqua-gap-2">
-                            <span class="aqua-text-pink-400">•</span>
-                            <span>${item}</span>
-                        </li>`;
+                        html += `<span class="aqua-badge-glass">${item}</span>`;
                     });
-                    html += '</ul>';
+                    html += '</div>';
                 }
 
                 // details配列がある場合
                 if (section.details && section.details.length > 0) {
-                    html += '<div class="aqua-space-y-3">';
+                    html += '<div class="aqua-grid aqua-grid-2">';
                     section.details.forEach(detail => {
                         html += `
-                            <div class="aqua-flex aqua-justify-between aqua-items-center">
-                                <span class="aqua-text-white aqua-opacity-70">${detail.label}</span>
+                            <div class="aqua-stat-card">
+                                <span class="aqua-text-white aqua-opacity-70 aqua-stat-label">${detail.label}</span>
                                 <span class="aqua-text-white aqua-font-semibold">${detail.value}</span>
                             </div>
                         `;
@@ -85,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     html += '<div class="aqua-space-y-3">';
                     section.timeline.forEach(entry => {
                         html += `
-                            <div class="aqua-flex aqua-gap-4 aqua-items-start">
-                                <span class="aqua-text-white aqua-opacity-70 aqua-font-semibold aqua-whitespace-nowrap">${entry.date}</span>
+                            <div class="aqua-timeline-item aqua-flex aqua-gap-4 aqua-items-start">
+                                <span class="aqua-badge-outline aqua-whitespace-nowrap">${entry.date}</span>
                                 <span class="aqua-text-white aqua-opacity-90">${entry.event}</span>
                             </div>
                         `;
@@ -101,16 +98,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // リンクセクション
         if (data.links && data.links.length > 0) {
             html += `
-                <div class="aqua-glass-light aqua-p-6 aqua-rounded-2xl">
+                <div class="aqua-glass aqua-glass-light aqua-p-6 aqua-rounded-2xl">
                     <h3 class="aqua-text-white aqua-text-xl aqua-font-bold aqua-mb-4">Links</h3>
-                    <div class="aqua-space-y-3">
+                    <div class="aqua-grid aqua-grid-3">
             `;
             data.links.forEach(link => {
                 html += `
                     <a href="${link.url}" target="_blank" rel="noopener noreferrer"
-                       class="aqua-flex aqua-items-center aqua-gap-3 aqua-p-3 aqua-glass-pink-medium aqua-rounded-xl aqua-no-underline aqua-text-white aqua-transition-transform aqua-duration-300 aqua-hover:scale-105">
+                       class="aqua-glass-pink-medium aqua-p-4 aqua-flex aqua-flex-col aqua-items-center aqua-gap-2 aqua-no-underline aqua-text-white aqua-transition-transform aqua-duration-300 aqua-hover:scale-105 aqua-rounded-2xl">
                         <span class="aqua-text-2xl">${link.icon}</span>
-                        <span class="aqua-font-semibold">${link.name}</span>
+                        <span class="aqua-font-semibold aqua-text-sm">${link.name}</span>
                     </a>
                 `;
             });

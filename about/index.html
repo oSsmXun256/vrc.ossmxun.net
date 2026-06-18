@@ -50,6 +50,54 @@
         .aqua-space-y-3 > * + * {
             margin-top: 0.75rem;
         }
+
+        /* About専用: セクションアイコンの円形バッジ */
+        .aqua-icon-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--aqua-gradient-primary);
+            font-size: 22px;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+        }
+
+        /* About専用: VRChat Infoのミニ統計カード */
+        .aqua-stat-card {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 16px;
+            padding: 14px 16px;
+        }
+        .aqua-stat-label {
+            display: block;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        /* About専用: タイムラインの縦線とドット */
+        .aqua-timeline-item {
+            position: relative;
+            padding: 2px 0 2px 22px;
+            border-left: 2px solid rgba(255, 255, 255, 0.35);
+        }
+        .aqua-timeline-item:last-child {
+            border-left-color: transparent;
+        }
+        .aqua-timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -5px;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--aqua-primary-light);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+        }
     </style>
 
     <link rel="icon" type="image/png" href="../img/avaters/0.8.1/aikon_t.png">
@@ -64,12 +112,12 @@
 
     <nav class="aqua-glass aqua-p-4 aqua-rounded-2xl aqua-flex aqua-gap-6 aqua-mb-10 aqua-mt-4">
         <a href="https://vrc.ossmxun.net/" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-80 aqua-hover:opacity-100">Home</a>
-        <a href="https://vrc.ossmxun.net/about" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-80 aqua-hover:opacity-100">About</a>
+        <a href="https://vrc.ossmxun.net/about" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-100">About</a>
         <a href="https://vrc.ossmxun.net/contact" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-80 aqua-hover:opacity-100">Contact</a>
         <a href="https://vrc.ossmxun.net/memories" class="aqua-text-white aqua-no-underline aqua-font-semibold aqua-opacity-80 aqua-hover:opacity-100">Memories</a>
     </nav>
 
-    <main class="aqua-glass aqua-p-8 aqua-rounded-3xl aqua-container-md">
+    <main class="aqua-glass aqua-p-8 aqua-rounded-3xl aqua-container aqua-container-lg">
         <h1 class="aqua-text-white aqua-text-3xl aqua-mb-6 aqua-font-bold aqua-text-center">About</h1>
         
         <div id="aboutContent">
