@@ -23,8 +23,8 @@
     --aqua-text-inverse: #2c3e50;
     
     /* Glass Effect Variables */
-    --aqua-glass-bg: rgba(255, 255, 255, 0.1);
-    --aqua-glass-bg-light: rgba(255, 255, 255, 0.16);
+    --aqua-glass-bg: rgba(160, 60, 100, 0.22);
+    --aqua-glass-bg-light: rgba(160, 60, 100, 0.30);
     --aqua-glass-bg-dark: rgba(0, 0, 0, 0.15);
     --aqua-glass-border: rgba(255, 255, 255, 0.45);
     --aqua-glass-border-light: rgba(255, 255, 255, 0.6);
@@ -90,8 +90,8 @@ html, body {
 }
 
 .aqua-glass-light {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(160, 60, 100, 0.25);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
 .aqua-glass-dark {
