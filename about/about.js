@@ -105,9 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
             data.links.forEach(link => {
                 html += `
                     <a href="${link.url}" target="_blank" rel="noopener noreferrer"
-                       class="aqua-glass-pink-medium aqua-p-4 aqua-flex aqua-flex-col aqua-items-center aqua-gap-2 aqua-no-underline aqua-text-white aqua-transition-transform aqua-duration-300 aqua-hover:scale-105 aqua-rounded-2xl">
-                        <span class="aqua-text-2xl">${link.icon}</span>
-                        <span class="aqua-font-semibold aqua-text-sm">${link.name}</span>
+                       class="aqua-glass-pink-medium aqua-p-4 aqua-flex aqua-flex-col aqua-items-center aqua-gap-2 aqua-no-underline aqua-transition-transform aqua-duration-300 aqua-hover:scale-105 aqua-rounded-2xl link-card">
+                        <img src="${link.icon}" alt="${link.name}" class="link-icon">
+                        <span class="aqua-font-semibold aqua-text-sm link-label">${link.name}</span>
                     </a>
                 `;
             });
