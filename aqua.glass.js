@@ -70,16 +70,14 @@ class AquaGlass {
             uniform vec3 resolution;
             uniform sampler2D uTexture;
             uniform vec2 imgRes;
-            uniform vec2 cardPos[4];
-            uniform vec2 cardHalf[4];
+            uniform vec2 cardPos[2];
+            uniform vec2 cardHalf[2];
             uniform int cardCount;
             uniform float white;
             uniform float saturate;
 
             in vec2 fragCoord;
             out vec4 outColor;
-
-            const float POWER_EXPONENT = 6.0;
 
             vec3 rgbToHsl(vec3 rgb) {
                 float maxC = max(rgb.r, max(rgb.g, rgb.b));
@@ -137,9 +135,13 @@ class AquaGlass {
                 vec4 bg = texture(uTexture, coverUv(uv));
                 vec4 color = bg;
 
-                for (int c = 0; c < cardCount; c++) {
-                    vec2 d = (fragPx - cardPos[c]) / cardHalf[c];
-                    float roundedBox = pow(abs(d.x), POWER_EXPONENT) + pow(abs(d.y), POWER_EXPONENT);
+                for (int c = 0; c < 2; c++) {
+                    if (c >= cardCount) break;
+                    vec2 chalf = cardHalf[c];
+                    float radius = min(min(chalf.x, chalf.y), 32.0);
+                    vec2 q = abs(fragPx - cardPos[c]) - (chalf - radius);
+                    float sdf = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0) - radius;
+                    float roundedBox = 1.0 + sdf / radius;
 
                     float rb1 = clamp((1.0 - roundedBox) * 8.0, 0.0, 1.0);
                     float rb2 = clamp((0.955 - roundedBox * 0.95) * 16.0, 0.0, 1.0) -
@@ -151,13 +153,13 @@ class AquaGlass {
                     if (transition <= 0.0) continue;
 
                     vec2 cuv = cardPos[c] / resolution.xy;
-                    vec2 lens = cuv + (uv - cuv) * (1.0 - roundedBox * 0.22);
+                    vec2 lens = cuv + (uv - cuv) * (1.0 - roundedBox * 0.18);
 
                     vec4 acc = vec4(0.0);
                     float total = 0.0;
-                    for (float x = -4.0; x <= 4.0; x++) {
-                        for (float y = -4.0; y <= 4.0; y++) {
-                            vec2 off = vec2(x, y) * 1.2 / resolution.xy;
+                    for (float x = -2.0; x <= 2.0; x++) {
+                        for (float y = -2.0; y <= 2.0; y++) {
+                            vec2 off = vec2(x, y) * 2.0 / resolution.xy;
                             acc += texture(uTexture, coverUv(lens + off));
                             total += 1.0;
                         }
@@ -379,7 +381,7 @@ class AquaGlass {
             const cardHalf = options.cardHalf || [300, 200];
             cards = [{ pos: cardPos, half: cardHalf }];
         }
-        cards = cards.slice(0, 4);
+        cards = cards.slice(0, 2);
 
         const posArr = new Float32Array(8);
         const halfArr = new Float32Array(8);
@@ -477,7 +479,7 @@ class AquaGlass {
         }
 
         const collectCards = () => {
-            const els = Array.from(document.querySelectorAll('.aqua-glass-liquid')).slice(0, 4);
+            const els = Array.from(document.querySelectorAll('.aqua-glass-liquid')).slice(0, 2);
             return els.map((el) => {
                 const r = el.getBoundingClientRect();
                 return {
@@ -487,8 +489,13 @@ class AquaGlass {
             });
         };
 
+        let cachedCards = collectCards();
+        const refreshCards = () => { cachedCards = collectCards(); };
+        window.addEventListener('scroll', refreshCards, { passive: true });
+        window.addEventListener('resize', refreshCards);
+
         instance.startRender(() => {
-            instance.render({ cards: collectCards() });
+            instance.render({ cards: cachedCards });
         });
 
         return instance;
