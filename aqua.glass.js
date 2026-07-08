@@ -331,6 +331,8 @@ class AquaGlass {
 
         this.imgW = image.naturalWidth || image.width;
         this.imgH = image.naturalHeight || image.height;
+
+        if (this.requestRender) this.requestRender();
     }
 
     /**
@@ -471,10 +473,24 @@ class AquaGlass {
         const instance = new AquaGlass(options);
         if (!instance.gl) return instance;
 
+        // On-demand rendering: draw only when something actually changes
+        // (scroll/resize/texture load) instead of an unconditional 60fps
+        // loop, which otherwise keeps the GPU busy indefinitely.
+        let rafPending = false;
+        const renderNow = () => {
+            rafPending = false;
+            instance.render({ cards: cachedCards });
+        };
+        instance.requestRender = () => {
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(renderNow);
+        };
+
         if (options.background) {
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.onload = () => instance.uploadTexture(img);
+            img.onload = () => { instance.uploadTexture(img); };
             img.src = options.background;
         }
 
@@ -490,13 +506,11 @@ class AquaGlass {
         };
 
         let cachedCards = collectCards();
-        const refreshCards = () => { cachedCards = collectCards(); };
+        const refreshCards = () => { cachedCards = collectCards(); instance.requestRender(); };
         window.addEventListener('scroll', refreshCards, { passive: true });
-        window.addEventListener('resize', refreshCards);
+        window.addEventListener('resize', () => { instance.setCanvasSize(); refreshCards(); });
 
-        instance.startRender(() => {
-            instance.render({ cards: cachedCards });
-        });
+        instance.requestRender();
 
         return instance;
     }
