@@ -291,8 +291,8 @@ body {
     display: block;
     opacity: 0;
     transition: opacity 0.5s, transform 0.4s;
-    will-change: transform;
 }
+.diamond-item:hover img { will-change: transform; }
 .diamond-item img.loaded { opacity: 1; }
 .diamond-item:hover img { transform: scale(1.08); }
 
@@ -464,18 +464,20 @@ body {
 <script src="aqua.glass.js"></script>
 <script>
 let ALL_PHOTOS = [];
+const BG_IMAGE = 'memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg';
 fetch('memories/list.json').then(r => r.json()).then(data => {
     ALL_PHOTOS = data;
     buildFilterBar(ALL_PHOTOS);
     renderCollage(ALL_PHOTOS);
-    if (ALL_PHOTOS.length) {
-        const hero = ALL_PHOTOS[0].thumb || ALL_PHOTOS[0].src;
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => window._aquaGlass.uploadTexture(img);
-        img.src = hero;
-    }
 });
+
+// 背景は固定画像を使用（thumbは480pxクロップのため画質劣化 → comp(フル解像度)を使用）
+(() => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => window._aquaGlass.uploadTexture(img);
+    img.src = BG_IMAGE;
+})();
 
 // ===== AquaGlass init (背景固定, list.json取得後に背景差し替え) =====
 window._aquaGlass = AquaGlass.autoInit({
