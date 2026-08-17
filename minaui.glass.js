@@ -1,15 +1,15 @@
 /*!
- * aqua.glass.js V2.0
- * Glass Effect Layer - OpenGL Liquid Glass Rendering
+ * minaui.glass.js V2.0
+ * MinaUI optional WebGL liquid-glass module
  *
- * Copyright (c) 2026 oSsmXun Design, All rights reserved.
+ * Copyright (c) 2026 oSsmXun
  */
 
-class AquaGlass {
+class MinaGlass {
     constructor(options = {}) {
-        this.canvas = options.canvas || document.getElementById('aqua-glcanvas');
+        this.canvas = options.canvas || document.getElementById('mina-glcanvas');
         if (!this.canvas) {
-            console.warn('AquaGlass: Canvas element not found');
+            console.warn('MinaGlass: Canvas element not found');
             return;
         }
 
@@ -21,13 +21,13 @@ class AquaGlass {
         });
 
         if (!this.gl) {
-            console.error('AquaGlass: WebGL2 not supported');
+            console.error('MinaGlass: WebGL2 not supported');
             return;
         }
 
         // Configuration
         this.config = {
-            saturate: options.saturate || 1.2,
+            saturate: options.saturate === undefined ? 1.2 : options.saturate,
             ...options
         };
 
@@ -39,6 +39,7 @@ class AquaGlass {
         this.imgW = 1;
         this.imgH = 1;
         this.whiteness = options.whiteLevel || 0;
+        this.maxCards = Math.max(1, Math.min(8, options.maxCards || 4));
 
         this.initialize();
         this.setupEventListeners();
@@ -70,8 +71,8 @@ class AquaGlass {
             uniform vec3 resolution;
             uniform sampler2D uTexture;
             uniform vec2 imgRes;
-            uniform vec2 cardPos[2];
-            uniform vec2 cardHalf[2];
+            uniform vec2 cardPos[8];
+            uniform vec2 cardHalf[8];
             uniform int cardCount;
             uniform float white;
             uniform float saturate;
@@ -135,7 +136,7 @@ class AquaGlass {
                 vec4 bg = texture(uTexture, coverUv(uv));
                 vec4 color = bg;
 
-                for (int c = 0; c < 2; c++) {
+                for (int c = 0; c < 8; c++) {
                     if (c >= cardCount) break;
                     vec2 chalf = cardHalf[c];
                     float radius = min(min(chalf.x, chalf.y), 32.0);
@@ -201,7 +202,7 @@ class AquaGlass {
         gl.linkProgram(this.program);
 
         if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-            console.error('AquaGlass: Program linking failed:', gl.getProgramInfoLog(this.program));
+            console.error('MinaGlass: Program linking failed:', gl.getProgramInfoLog(this.program));
             return;
         }
 
@@ -239,7 +240,7 @@ class AquaGlass {
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error('AquaGlass: Shader compilation failed:', gl.getShaderInfoLog(shader));
+            console.error('MinaGlass: Shader compilation failed:', gl.getShaderInfoLog(shader));
             gl.deleteShader(shader);
             return null;
         }
@@ -383,10 +384,10 @@ class AquaGlass {
             const cardHalf = options.cardHalf || [300, 200];
             cards = [{ pos: cardPos, half: cardHalf }];
         }
-        cards = cards.slice(0, 2);
+        cards = cards.slice(0, this.maxCards);
 
-        const posArr = new Float32Array(8);
-        const halfArr = new Float32Array(8);
+        const posArr = new Float32Array(this.maxCards * 2);
+        const halfArr = new Float32Array(this.maxCards * 2);
         cards.forEach((card, i) => {
             posArr[i * 2] = card.pos[0] * dpr;
             posArr[i * 2 + 1] = this.canvas.height - card.pos[1] * dpr;
@@ -462,15 +463,16 @@ class AquaGlass {
     }
 
     /**
-     * Auto-bind to all .aqua-glass-liquid elements on the page and start
-     * the render loop. Up to 4 elements are tracked simultaneously.
+     * Auto-bind to all Mina liquid-glass elements on the page and start
+     * the render loop. Up to maxCards elements are tracked simultaneously
+     * (4 by default).
      *
-     * @param {Object} options - passed through to the AquaGlass constructor
+     * @param {Object} options - passed through to the MinaGlass constructor
      * @param {string} [options.background] - image URL used as the lens source
-     * @returns {AquaGlass}
+     * @returns {MinaGlass}
      */
     static autoInit(options = {}) {
-        const instance = new AquaGlass(options);
+        const instance = new MinaGlass(options);
         if (!instance.gl) return instance;
 
         // On-demand rendering: draw only when something actually changes
@@ -495,7 +497,7 @@ class AquaGlass {
         }
 
         const collectCards = () => {
-            const els = Array.from(document.querySelectorAll('.aqua-glass-liquid')).slice(0, 2);
+            const els = Array.from(document.querySelectorAll('.mina-glass-liquid, .mina-glass--liquid')).slice(0, instance.maxCards);
             return els.map((el) => {
                 const r = el.getBoundingClientRect();
                 return {
@@ -517,6 +519,9 @@ class AquaGlass {
 }
 
 // Export for module systems
+if (typeof window !== 'undefined') {
+    window.MinaGlass = MinaGlass;
+}
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AquaGlass;
+    module.exports = MinaGlass;
 }

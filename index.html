@@ -1,26 +1,24 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-theme="dark" data-style="glass" data-accent="pink">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>About | お刺身くん</title>
 
-<link rel="stylesheet" href="aqua.design.css">
-<link rel="stylesheet" href="aqua.style.css">
-<link rel="stylesheet" href="aqua.effect.css">
+<link rel="stylesheet" href="minaui.css">
 <link rel="icon" type="image/png" href="img/avaters/0.8.1/aikon_t.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 /* ===== Theme ===== */
 :root {
-    --aqua-primary: #ec4899;
-    --aqua-primary-light: #f472b6;
-    --aqua-primary-dark: #be185d;
-    --aqua-gradient-primary: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
-    --aqua-glass-bg: rgba(160, 60, 100, 0.22);
-    --aqua-glass-bg-light: rgba(160, 60, 100, 0.30);
-    --aqua-glass-border: rgba(255, 255, 255, 0.25);
+    --mina-primary: #ec4899;
+    --mina-primary-hover: #f472b6;
+    --mina-primary-active: #be185d;
+    --mina-gradient-primary: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+    --mina-glass-bg: rgba(160, 60, 100, 0.22);
+    --mina-glass-bg-light: rgba(160, 60, 100, 0.30);
+    --mina-glass-border: rgba(255, 255, 255, 0.25);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,13 +32,33 @@ body {
 }
 
 /* ===== WebGL canvas ===== */
-#aqua-glcanvas {
+#mina-glcanvas {
     position: fixed;
     inset: 0;
     width: 100vw;
     height: 100vh;
     z-index: 0;
     pointer-events: none;
+}
+
+/* MinaGlass(WebGL) paints the liquid lens behind these surfaces. Keep the
+   surface transparent so the photo composition remains unchanged. */
+.mina-glass--liquid,
+.mina-glass-liquid {
+    position: relative;
+    overflow: hidden;
+    /* The WebGL canvas is the surface. These resets keep MinaUI's generic
+       glass component from adding a second native surface over the lens. */
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    color: #fff;
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.45),
+        0 1px 12px rgba(0, 0, 0, 0.25);
 }
 
 /*
@@ -52,7 +70,7 @@ body {
 */
 
 /* ===== Photo slideshow background ===== */
-/* AquaGlass(WebGL)が動的に背景を描画するため、生画像レイヤーは表示しない（テクスチャ供給専用） */
+/* MinaGlass(WebGL)が動的に背景を描画するため、生画像レイヤーは表示しない（テクスチャ供給専用） */
 .bg-slideshow {
     display: none;
 }
@@ -118,6 +136,7 @@ body {
     gap: 16px;
 }
 .card-avatar {
+    display: block;
     width: 72px;
     height: 72px;
     border-radius: 50%;
@@ -151,6 +170,8 @@ body {
     gap: 6px;
 }
 .tag {
+    min-height: 0;
+    line-height: normal;
     padding: 4px 11px;
     border-radius: 999px;
     font-size: 11px;
@@ -181,6 +202,7 @@ body {
     gap: 8px;
 }
 .stat-item {
+    gap: 0;
     background: rgba(255,255,255,0.07);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px;
@@ -310,6 +332,9 @@ body {
     padding: 16px 18px;
 }
 .filter-btn {
+    min-height: 0;
+    line-height: normal;
+    box-shadow: none;
     padding: 6px 14px;
     font-size: 12px;
     font-weight: 700;
@@ -321,9 +346,9 @@ body {
     cursor: pointer;
     transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.filter-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.filter-btn:hover { background: rgba(255,255,255,0.12); color: #fff; transform: none; box-shadow: none; }
 .filter-btn.active {
-    background: var(--aqua-gradient-primary);
+    background: var(--mina-gradient-primary);
     border-color: transparent;
     color: #fff;
 }
@@ -343,7 +368,9 @@ body {
     pointer-events: none;
     transition: opacity 0.25s;
 }
-.lightbox.open { opacity: 1; pointer-events: all; }
+.filter-btn:active { transform: none; box-shadow: none; }
+.lightbox.open,
+.lightbox.is-open { visibility: visible; opacity: 1; pointer-events: all; }
 .lightbox img {
     max-width: 90vw;
     max-height: 88vh;
@@ -361,9 +388,14 @@ body {
     font-size: 20px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    min-height: 0;
+    padding: 0;
+    line-height: normal;
+    box-shadow: none;
+    transform: none;
     transition: background 0.2s;
 }
-.lightbox-close:hover { background: rgba(255,255,255,0.22); }
+.lightbox-close:hover { background: rgba(255,255,255,0.22); transform: none; }
 
 /* ===== Mobile ===== */
 @media (max-width: 640px) {
@@ -387,18 +419,18 @@ body {
 </head>
 <body>
 
-<!-- WebGL canvas (AquaGlass) -->
-<canvas id="aqua-glcanvas"></canvas>
+<!-- WebGL canvas (MinaGlass site extension) -->
+<canvas id="mina-glcanvas"></canvas>
 
 <!-- Photo slideshow background -->
 <div class="bg-slideshow" id="bgSlideshow"></div>
 <div class="bg-overlay"></div>
 
-<!-- Fixed profile card (top-center, 横長) — aqua-glass-liquid でWebGLレンズ効果 -->
-<aside class="profile-card aqua-glass-liquid" id="profileCard">
+<!-- Fixed profile card (top-center, 横長) — mina-glass--liquid でWebGLレンズ効果 -->
+<aside class="profile-card mina-glass mina-glass--liquid" id="profileCard">
 
     <div class="card-avatar-row">
-        <img class="card-avatar" src="img/avaters/0.8.1/aikon_at.png" alt="お刺身くん">
+        <img class="card-avatar mina-avatar mina-avatar--lg" src="img/avaters/0.8.1/aikon_at.png" alt="お刺身くん">
         <div>
             <div class="card-name">お刺身くん</div>
             <div class="card-sub">VRChat / Photography</div>
@@ -409,20 +441,20 @@ body {
         <div class="card-section">
             <p>Discordによくいます。VRChatでは写真を撮るのが好きです。</p>
         </div>
-        <div class="tags">
-            <span class="tag">写真撮影</span>
-            <span class="tag">ワールド巡り</span>
-            <span class="tag">友達との会話</span>
+        <div class="tags mina-tag-list">
+            <span class="tag mina-chip">写真撮影</span>
+            <span class="tag mina-chip">ワールド巡り</span>
+            <span class="tag mina-chip">友達との会話</span>
         </div>
     </div>
 
     <div class="card-side">
         <div class="stat-grid">
-            <div class="stat-item">
+            <div class="stat-item mina-stat">
                 <div class="stat-label">活動開始</div>
                 <div class="stat-value">2023年11月</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-item mina-stat">
                 <div class="stat-label">活動時間</div>
                 <div class="stat-value">夜間・週末</div>
             </div>
@@ -449,19 +481,20 @@ body {
 
     <!-- Photos -->
     <div class="photos-area">
-        <div class="filter-bar aqua-glass-liquid" id="filterBar"></div>
+        <div class="filter-bar mina-glass mina-glass--liquid" id="filterBar"></div>
         <div class="diamond-area" id="collageArea"></div>
     </div>
 
 </div>
 
 <!-- Lightbox -->
-<div class="lightbox" id="lightbox">
-    <button class="lightbox-close" id="lightboxClose">✕</button>
+<div class="lightbox mina-modal" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" data-mina-backdrop-close="true">
+    <button type="button" class="lightbox-close mina-btn mina-btn--icon mina-btn--sm" id="lightboxClose" aria-label="Close image">✕</button>
     <img id="lightboxImg" src="" alt="">
 </div>
 
-<script src="aqua.glass.js"></script>
+<script src="minaui.js"></script>
+<script src="minaui.glass.js"></script>
 <script>
 let ALL_PHOTOS = [];
 const BG_IMAGE = 'memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg';
@@ -475,12 +508,15 @@ fetch('memories/list.json').then(r => r.json()).then(data => {
 (() => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => window._aquaGlass.uploadTexture(img);
+    img.onload = () => window._minaGlass.uploadTexture(img);
     img.src = BG_IMAGE;
 })();
 
-// ===== AquaGlass init (背景固定, list.json取得後に背景差し替え) =====
-window._aquaGlass = AquaGlass.autoInit({
+// ===== MinaGlass init (背景固定, list.json取得後に背景差し替え) =====
+window._minaGlass = MinaGlass.autoInit({
+    // Keep the original page's two-surface composition while using MinaGlass's
+    // expanded renderer for other sites.
+    maxCards: 2,
     saturate: 1.5,
     whiteLevel: 0
 });
@@ -489,8 +525,21 @@ window._aquaGlass = AquaGlass.autoInit({
 const collageArea = document.getElementById('collageArea');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
-document.getElementById('lightboxClose').onclick = () => lightbox.classList.remove('open');
-lightbox.addEventListener('click', e => { if(e.target === lightbox) lightbox.classList.remove('open'); });
+const setLightboxOpen = (open) => {
+    if (open) {
+        if (window.MinaUI) MinaUI.open(lightbox);
+        lightbox.classList.add('open');
+    } else {
+        if (window.MinaUI) MinaUI.close(lightbox);
+        lightbox.classList.remove('open');
+    }
+    lightbox.setAttribute('aria-hidden', open ? 'false' : 'true');
+};
+document.getElementById('lightboxClose').onclick = () => setLightboxOpen(false);
+lightbox.addEventListener('click', e => { if(e.target === lightbox) setLightboxOpen(false); });
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) setLightboxOpen(false);
+});
 
 const imgObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -583,7 +632,7 @@ function renderCollage(photos) {
                 const dx = Math.abs(e.clientX - cx), dy = Math.abs(e.clientY - cy);
                 if (dx / hw + dy / hh > 1) return;
                 lightboxImg.src = p.src;
-                lightbox.classList.add('open');
+                setLightboxOpen(true);
             };
             inner.appendChild(img);
             item.appendChild(inner);
@@ -604,7 +653,7 @@ function buildFilterBar(photos) {
     filterBar.innerHTML = '';
 
     const allBtn = document.createElement('button');
-    allBtn.className = 'filter-btn active';
+    allBtn.className = 'filter-btn mina-btn mina-btn--pill active';
     allBtn.textContent = '全部';
     allBtn.onclick = () => selectFilter(allBtn, photos);
     filterBar.appendChild(allBtn);
@@ -615,7 +664,7 @@ function buildFilterBar(photos) {
         filterBar.appendChild(sep);
 
         const yBtn = document.createElement('button');
-        yBtn.className = 'filter-btn';
+        yBtn.className = 'filter-btn mina-btn mina-btn--pill';
         yBtn.textContent = `${y}年`;
         yBtn.onclick = () => selectFilter(yBtn, photos.filter(p => p.y === y));
         filterBar.appendChild(yBtn);
@@ -623,7 +672,7 @@ function buildFilterBar(photos) {
         const months = [...new Set(photos.filter(p => p.y === y).map(p => p.m))].sort((a, b) => a - b);
         months.forEach(m => {
             const mBtn = document.createElement('button');
-            mBtn.className = 'filter-btn';
+            mBtn.className = 'filter-btn mina-btn mina-btn--pill';
             mBtn.textContent = `${y}/${m}`;
             mBtn.onclick = () => selectFilter(mBtn, photos.filter(p => p.y === y && p.m === m));
             filterBar.appendChild(mBtn);

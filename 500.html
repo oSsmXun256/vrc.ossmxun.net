@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>500 Internal Server Error</title>
 
-    <link rel="stylesheet" href="https://ossmxun.net/aqua.design.css">
-    <link rel="stylesheet" href="https://ossmxun.net/aqua.style.css">
-    <link rel="stylesheet" href="https://ossmxun.net/aqua.effect.css">
+    <link rel="stylesheet" href="minaui.css">
+    <script src="minaui.js" defer></script>
 
     <link rel="icon" type="image/webp" href="https://ossmxun.net/img/aikon.w/n_ossm_nc.webp">
 
@@ -27,30 +26,48 @@
             color: #fff;
             background:
                 radial-gradient(circle at 1px 1px, rgba(255,255,255,0.18) 1px, transparent 0) 0 0/26px 26px,
-                linear-gradient(135deg, var(--aqua-grad-1), var(--aqua-grad-2));
+                linear-gradient(135deg, #667eea, #9f85d6);
             background-attachment: fixed;
         }
-        .error-box { max-width: 28rem; }
+        .error-box {
+            max-width: 28rem;
+            position: relative;
+            overflow: hidden;
+            --mina-glass-bg: rgba(255,255,255,0.1);
+            --mina-glass-border: rgba(255,255,255,0.45);
+            --mina-glass-blur: 22px;
+            --mina-glass-saturate: 120%;
+            --mina-shadow-md: 0 24px 60px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.35);
+        }
+        .error-box .mina-h2 { color: #fff; font-size: 24px; font-weight: 700; letter-spacing: normal; line-height: normal; }
+        .error-box .mina-small { color: #fff; line-height: 1.75; }
+        .error-box .mina-btn { min-height: auto; padding: 10px 16px; border-radius: 12px; color: #fff; font-weight: 600; line-height: normal; box-shadow: none; transform: none; }
+        .error-box .mina-btn:hover { color: #fff; transform: none; box-shadow: none; }
+        .error-box .mina-btn:active { transform: translateY(1px) scale(0.98); }
+        .error-box .mina-btn--primary { border: 0; background: #4e70df; transition: all 0.2s ease; }
+        .error-box .mina-btn--primary:hover { background: #6b8aff; }
+        .error-box .mina-btn--glass { border: 1px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.07); transition: background 0.15s ease; }
+        .error-box .mina-btn--glass:hover { background: rgba(255,255,255,0.16); }
         .error-code { font-size: 5rem; font-weight: 800; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
-<body class="aqua-flex aqua-items-center aqua-justify-center aqua-min-h-screen aqua-p-4">
+<body class="mina-flex mina-flex--center mina-min-h-screen mina-p-4">
 
-    <div class="aqua-glass aqua-p-8 aqua-text-center aqua-w-full aqua-flex aqua-items-center aqua-justify-center aqua-flex-col aqua-gap-6 error-box">
+    <div class="mina-glass mina-glass--sm mina-p-8 mina-text-center mina-w-full mina-flex mina-flex--center mina-flex--column mina-gap-6 error-box">
 
         <div class="error-code">500</div>
 
-        <h1 class="aqua-heading-2 aqua-m-0">Internal Server Error</h1>
+        <h1 class="mina-h2 mina-m-0">Internal Server Error</h1>
 
-        <p class="aqua-text-sm aqua-leading-relaxed">
+        <p class="mina-small">
             サーバーで予期せぬエラーが発生しました。<br>一時的な問題である可能性があります。<br>後ほどお試しください。<br>URLをご確認いただくか、管理者にお問い合わせください。
         </p>
 
-        <div class="aqua-flex aqua-flex-col aqua-gap-4 aqua-w-full">
-            <a href="https://ossmxun.net/" class="aqua-btn aqua-btn-primary aqua-justify-center">
+        <div class="mina-flex mina-flex--column mina-gap-4 mina-w-full">
+            <a href="https://ossmxun.net/" class="mina-btn mina-btn--primary mina-justify-center">
                 ホームに戻る
             </a>
-            <button onclick="history.back()" class="aqua-btn aqua-btn-glass aqua-w-full aqua-justify-center">
+            <button onclick="history.back()" class="mina-btn mina-btn--glass mina-w-full mina-justify-center">
                 ← 前のページに戻る
             </button>
         </div>
