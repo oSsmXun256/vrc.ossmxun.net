@@ -103,6 +103,25 @@ future MinaUI bundle update:
 - all six error pages use local Mina assets and contain no active Aqua
   stylesheet/script reference.
 
+## Gallery regression fixes (2026-08-18)
+
+- Diamond tiles now make the clipped `.diamond-inner` the only pointer target;
+  the rectangular positioning wrapper ignores pointer events, and keyboard
+  activation uses the same target. Hit testing is calculated from the clipped
+  element's live rectangle, so gaps and overlapping wrappers cannot open an
+  adjacent image.
+- The photo stack is isolated below the filter stack (`.diamond-area` 0,
+  tiles 1, filter bar 50) so the sticky liquid-glass filter remains above the
+  collage within the scroll-area stacking context.
+- Lightbox images are preloaded and decoded before the hidden image is made
+  visible. A request token prevents a slower previous selection from winning.
+  Closing uses a dedicated exit animation; only its `animationend` (or the
+  guarded timeout fallback) updates `hidden`/`aria-hidden`, clears the old
+  source, and restores focus to the tile.
+- The close control is pinned to 40x40px with a non-shrinking 1:1 aspect ratio.
+  `BIG_RATIO` is 0.24 (previously 0.14), increasing medium cells without
+  changing the 112-image data set.
+
 ## Acceptance checks
 
 - No page links the archived Aqua CSS/JS as its active stylesheet/script.

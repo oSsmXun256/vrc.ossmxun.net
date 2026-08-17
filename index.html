@@ -226,6 +226,7 @@ body {
 .scroll-area {
     position: relative;
     z-index: 5;
+    isolation: isolate;
     min-height: 100vh;
     padding: 0 48px 80px;
     display: flex;
@@ -287,16 +288,32 @@ body {
 /* ===== Diamond mosaic（菱形タイル、回転格子で大枠/巨大枠も隙間なく整合） ===== */
 .diamond-area {
     position: relative;
+    z-index: 0;
 }
 .diamond-item {
     position: absolute;
+    z-index: 1;
+    pointer-events: none;
 }
 .diamond-inner {
     position: absolute;
     inset: var(--diamond-gap, 5px);
+    z-index: 1;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     overflow: hidden;
     cursor: pointer;
+    pointer-events: auto;
+    background: transparent;
+    font: inherit;
+    transform: translateZ(0);
+}
+.diamond-inner:focus-visible {
+    outline: 2px solid rgba(255,255,255,0.9);
+    outline-offset: -2px;
 }
 .diamond-inner::after {
     content: '';
@@ -311,18 +328,22 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;
     opacity: 0;
     transition: opacity 0.5s, transform 0.4s;
 }
-.diamond-item:hover img { will-change: transform; }
+.diamond-item:hover img,
+.diamond-inner:hover img { will-change: transform; }
 .diamond-item img.loaded { opacity: 1; }
-.diamond-item:hover img { transform: scale(1.08); }
+.diamond-item:hover img,
+.diamond-inner:hover img { transform: scale(1.08); }
 
 /* ===== Filter bar ===== */
 .filter-bar {
     position: sticky;
     top: 24px;
-    z-index: 10;
+    z-index: 50;
+    isolation: isolate;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -366,11 +387,31 @@ body {
     backdrop-filter: blur(16px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s;
+    transition: opacity 0.25s, visibility 0s linear 0.25s;
 }
 .filter-btn:active { transform: none; box-shadow: none; }
 .lightbox.open,
 .lightbox.is-open { visibility: visible; opacity: 1; pointer-events: all; }
+.lightbox.open,
+.lightbox.is-open {
+    animation: lightbox-fade-in 0.25s ease both;
+    transition-delay: 0s;
+}
+.lightbox.is-closing {
+    visibility: visible;
+    opacity: 0;
+    pointer-events: none;
+    animation: lightbox-fade-out 0.25s ease both;
+    transition-delay: 0s;
+}
+@keyframes lightbox-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes lightbox-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
 .lightbox img {
     max-width: 90vw;
     max-height: 88vh;
@@ -394,6 +435,16 @@ body {
     box-shadow: none;
     transform: none;
     transition: background 0.2s;
+}
+.lightbox .lightbox-close {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    flex: 0 0 40px;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    border-radius: 50%;
 }
 .lightbox-close:hover { background: rgba(255,255,255,0.22); transform: none; }
 
@@ -488,9 +539,9 @@ body {
 </div>
 
 <!-- Lightbox -->
-<div class="lightbox mina-modal" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" data-mina-backdrop-close="true">
+<div class="lightbox mina-modal" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" hidden data-mina-backdrop-close="true">
     <button type="button" class="lightbox-close mina-btn mina-btn--icon mina-btn--sm" id="lightboxClose" aria-label="Close image">✕</button>
-    <img id="lightboxImg" src="" alt="">
+    <img id="lightboxImg" src="" alt="" hidden>
 </div>
 
 <script src="minaui.js"></script>
@@ -525,21 +576,114 @@ window._minaGlass = MinaGlass.autoInit({
 const collageArea = document.getElementById('collageArea');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
-const setLightboxOpen = (open) => {
-    if (open) {
+const lightboxClose = document.getElementById('lightboxClose');
+let lightboxRequest = 0;
+let lightboxCloseTimer = 0;
+let lightboxTrigger = null;
+
+function waitForImageDecode(img) {
+    const decode = () => {
+        if (typeof img.decode !== 'function') return Promise.resolve();
+        return img.decode().catch(() => undefined);
+    };
+    if (img.complete) {
+        return img.naturalWidth > 0
+            ? decode()
+            : Promise.reject(new Error('Lightbox image failed to load'));
+    }
+    return new Promise((resolve, reject) => {
+        img.addEventListener('load', () => decode().then(resolve), { once: true });
+        img.addEventListener('error', () => reject(new Error('Lightbox image failed to load')), { once: true });
+    });
+}
+
+function preloadLightboxImage(src) {
+    const preload = new Image();
+    preload.decoding = 'async';
+    preload.src = src;
+    return waitForImageDecode(preload).then(() => preload);
+}
+
+function finishLightboxClose() {
+    window.clearTimeout(lightboxCloseTimer);
+    lightboxCloseTimer = 0;
+    lightbox.classList.remove('is-closing', 'open', 'is-open');
+    if (window.MinaUI) MinaUI.close(lightbox);
+    lightboxImg.hidden = true;
+    lightboxImg.removeAttribute('src');
+    lightbox.removeAttribute('aria-busy');
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightbox.hidden = true;
+    const trigger = lightboxTrigger;
+    lightboxTrigger = null;
+    if (trigger && trigger.isConnected) {
+        try { trigger.focus({ preventScroll: true }); }
+        catch (_) { trigger.focus(); }
+    }
+}
+
+function setLightboxOpen(open) {
+    if (open) return;
+    if (lightbox.hidden && !lightbox.classList.contains('is-open')) return;
+    ++lightboxRequest;
+    window.clearTimeout(lightboxCloseTimer);
+    lightboxCloseTimer = 0;
+    lightbox.classList.remove('open', 'is-open');
+    lightbox.classList.add('is-closing');
+    lightbox.setAttribute('aria-hidden', 'false');
+    lightboxCloseTimer = window.setTimeout(finishLightboxClose, 320);
+}
+
+async function openLightbox(src, trigger) {
+    const request = ++lightboxRequest;
+    window.clearTimeout(lightboxCloseTimer);
+    lightboxCloseTimer = 0;
+    lightboxTrigger = trigger || document.activeElement;
+    const wasOpen = !lightbox.hidden && (lightbox.classList.contains('open') || lightbox.classList.contains('is-open'));
+    lightbox.classList.remove('is-closing', 'open', 'is-open');
+    lightboxImg.hidden = true;
+    lightbox.setAttribute('aria-busy', 'true');
+    if (!wasOpen) lightbox.hidden = true;
+
+    try {
+        const preload = await preloadLightboxImage(src);
+        if (request !== lightboxRequest) return;
+        lightboxImg.src = preload.currentSrc || preload.src || src;
+        await waitForImageDecode(lightboxImg);
+        if (request !== lightboxRequest) return;
+        lightbox.hidden = false;
         if (window.MinaUI) MinaUI.open(lightbox);
         lightbox.classList.add('open');
-    } else {
-        if (window.MinaUI) MinaUI.close(lightbox);
-        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        lightbox.removeAttribute('aria-busy');
+        lightboxImg.hidden = false;
+    } catch (_) {
+        if (request !== lightboxRequest) return;
+        lightboxImg.hidden = true;
+        lightbox.removeAttribute('aria-busy');
+        lightbox.hidden = true;
+        lightbox.setAttribute('aria-hidden', 'true');
     }
-    lightbox.setAttribute('aria-hidden', open ? 'false' : 'true');
-};
-document.getElementById('lightboxClose').onclick = () => setLightboxOpen(false);
-lightbox.addEventListener('click', e => { if(e.target === lightbox) setLightboxOpen(false); });
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && lightbox.classList.contains('open')) setLightboxOpen(false);
+}
+
+lightbox.addEventListener('animationend', e => {
+    if (e.target === lightbox && e.animationName === 'lightbox-fade-out') finishLightboxClose();
 });
+lightboxClose.addEventListener('click', () => setLightboxOpen(false));
+lightbox.addEventListener('click', e => {
+    if (e.target === lightbox) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setLightboxOpen(false);
+    }
+});
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && (lightbox.classList.contains('open') || lightbox.classList.contains('is-open'))) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setLightboxOpen(false);
+    }
+}, true);
 
 const imgObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -556,7 +700,7 @@ let HALF = S / 2;
 const GAP = 5;       // 菱形間の余白
 collageArea.style.setProperty('--diamond-gap', GAP + 'px');
 
-const BIG_RATIO = 0.14;   // 4枠
+const BIG_RATIO = 0.24;   // 中サイズを増やし、横長画面でも視線のリズムを保つ
 const HUGE_RATIO = 0.035; // 大枠
 
 // (s,d) 格子: top=HALF*s, left=HALF*(d-k)。sとdは常に同じ偶奇。
@@ -620,20 +764,28 @@ function renderCollage(photos) {
 
             const inner = document.createElement('div');
             inner.className = 'diamond-inner';
+            inner.setAttribute('role', 'button');
+            inner.tabIndex = 0;
+            inner.setAttribute('aria-label', 'Open image');
             const img = document.createElement('img');
             img.dataset.src = p.thumb || p.src;
             img.loading = 'lazy';
             img.decoding = 'async';
             img.alt = '';
-            inner.onclick = (e) => {
-                const r = item.getBoundingClientRect();
+            const openFromPoint = (e) => {
+                const r = inner.getBoundingClientRect();
                 const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-                const hw = r.width / 2 - GAP, hh = r.height / 2 - GAP;
+                const hw = Math.max(r.width / 2, 1), hh = Math.max(r.height / 2, 1);
                 const dx = Math.abs(e.clientX - cx), dy = Math.abs(e.clientY - cy);
                 if (dx / hw + dy / hh > 1) return;
-                lightboxImg.src = p.src;
-                setLightboxOpen(true);
+                openLightbox(p.src, inner);
             };
+            inner.addEventListener('click', openFromPoint);
+            inner.addEventListener('keydown', e => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                openLightbox(p.src, inner);
+            });
             inner.appendChild(img);
             item.appendChild(inner);
             collageArea.appendChild(item);
