@@ -31,72 +31,54 @@ body {
     overflow-x: hidden;
 }
 
-/* ===== WebGL canvas ===== */
-#mina-glcanvas {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* MinaGlass(WebGL) paints the liquid lens behind these surfaces. Keep the
-   surface transparent so the photo composition remains unchanged. */
-.mina-glass--liquid,
-.mina-glass-liquid {
-    position: relative;
-    overflow: hidden;
-    /* The WebGL canvas is the surface. These resets keep MinaUI's generic
-       glass component from adding a second native surface over the lens. */
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    color: #fff;
-    text-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.45),
-        0 1px 12px rgba(0, 0, 0, 0.25);
-}
-
 /*
-  CONCEPT B: 写真が背景（fixed）として敷かれ、その上に
-  プロフィールカードが fixed で浮かぶ。
-  スクロールすると背景写真がスライドショーで切り替わり、
-  プロフィールは常に前面に浮いたまま。
-  画面下半分に写真サムネ一覧がオーバーレイで並ぶ。
+  CONCEPT B (V3.3 overlay edition): 写真が背景（fixed）として敷かれ、その上に
+  プロフィールカードが fixed で浮かぶ。Memories の Diamond は通常のDOM描画の
+  まま、その上に sticky の日付フィルターバー (Liquid Glass) が浮く。
+
+  Liquid Glass は sceneMode: 'overlay' で動作:
+    - WebGL canvas はガラス領域だけを描く (外側は完全透明)
+    - Diamond は canvas より下、filterBar の中身は canvas より上
+
+  Layer契約 (root stacking context, 上から):
+    20  .filter-bar        (sticky, above the liquid canvas)
+    10  .profile-card      (fixed, above the canvas)
+     0  #mina-glcanvas     (fixed liquid overlay canvas)
+    -1  .diamond-area      (below the canvas: refracted through it)
+    -2  .bg-overlay       (fixed dim, behind the diamonds)
+   CSSは要素ごとにposition/transformでstacking contextを作らないこと。
 */
 
+/* Native/static fallback tint: keep this site's pink glass tone */
+.mina-glass--liquid.mina-liquid-native,
+.mina-glass-liquid.mina-liquid-native {
+    background: var(--mina-glass-bg);
+}
+
 /* ===== Photo slideshow background ===== */
-/* MinaGlass(WebGL)が動的に背景を描画するため、生画像レイヤーは表示しない（テクスチャ供給専用） */
+/* WebGLが背景を屈折描画するため、生画像レイヤーは非表示（テクスチャ供給専用） */
 .bg-slideshow {
     display: none;
 }
-.bg-slide {
-    background-size: cover;
-    background-position: center;
-}
 
-/* 背景グラデーションマスク: 上→中は暗く、右下は少し明るく */
+/* 背景グラデーションマスク: Diamondより後ろ */
 .bg-overlay {
     position: fixed;
     inset: 0;
-    z-index: 2;
+    z-index: -2;
     background:
         linear-gradient(135deg,
-            rgba(8, 3, 18, 0.5) 0%,
-            rgba(8, 3, 18, 0.3) 40%,
-            rgba(8, 3, 18, 0.1) 70%,
-            rgba(8, 3, 18, 0.3) 100%
+            rgba(8, 3, 18, 0.55) 0%,
+            rgba(8, 3, 18, 0.35) 40%,
+            rgba(8, 3, 18, 0.15) 70%,
+            rgba(8, 3, 18, 0.35) 100%
         );
     pointer-events: none;
 }
 
 /* ===== Profile card (fixed top-center, 横長) ===== */
 .profile-card {
-    position: absolute;
+    position: fixed;
     top: 40px;
     left: 50%;
     transform: translateX(-50%);
@@ -223,10 +205,10 @@ body {
 }
 
 /* ===== Scroll content (右下エリア) ===== */
+/* z-index: auto — この要素自体は stacking context を作らない。
+   Diamond を canvas の下 (-1)、filterBar を canvas の上 (20) に置くため。 */
 .scroll-area {
     position: relative;
-    z-index: 5;
-    isolation: isolate;
     min-height: 100vh;
     padding: 0 48px 80px;
     display: flex;
@@ -234,7 +216,7 @@ body {
     justify-content: flex-end;
 }
 
-/* 最初の画面: カードの下に画像を配置 */
+/* 最初の画面: カードの下にヒントを配置 */
 .hero-hint {
     height: 100vh;
 }
@@ -277,6 +259,8 @@ body {
 }
 
 .photos-label {
+    position: relative;
+    z-index: 1;   /* above the liquid canvas (z:0) */
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 3px;
@@ -285,14 +269,15 @@ body {
     margin-bottom: 20px;
 }
 
-/* ===== Diamond mosaic（菱形タイル、回転格子で大枠/巨大枠も隙間なく整合） ===== */
+/* ===== Diamond mosaic =====
+   z-index: -1 → liquid canvas (z:0) の下。ガラス越しに屈折される側。 */
 .diamond-area {
     position: relative;
-    z-index: 0;
+    z-index: -1;
 }
 .diamond-item {
     position: absolute;
-    z-index: 1;
+    z-index: -1;
     pointer-events: none;
 }
 .diamond-inner {
@@ -309,7 +294,6 @@ body {
     pointer-events: auto;
     background: transparent;
     font: inherit;
-    transform: translateZ(0);
 }
 .diamond-inner:focus-visible {
     outline: 2px solid rgba(255,255,255,0.9);
@@ -332,18 +316,21 @@ body {
     opacity: 0;
     transition: opacity 0.5s, transform 0.4s;
 }
-.diamond-item:hover img,
-.diamond-inner:hover img { will-change: transform; }
 .diamond-item img.loaded { opacity: 1; }
-.diamond-item:hover img,
-.diamond-inner:hover img { transform: scale(1.08); }
 
-/* ===== Filter bar ===== */
+/* Hover演出は実際にhoverできる端末のみ */
+@media (hover: hover) and (pointer: fine) {
+    .diamond-item:hover img,
+    .diamond-inner:hover img { transform: scale(1.08); }
+}
+
+/* ===== Filter bar =====
+   sticky + z-index 20: liquid canvas (0) より上。ガラスのピクセルは
+   このバーの「背景」としてだけ見え、文字/ボタンは常に前面。 */
 .filter-bar {
     position: sticky;
     top: 24px;
-    z-index: 50;
-    isolation: isolate;
+    z-index: 20;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -379,7 +366,7 @@ body {
 .lightbox {
     position: fixed;
     inset: 0;
-    z-index: 200;
+    z-index: var(--mina-z-modal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -388,6 +375,11 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s, visibility 0s linear 0.25s;
+}
+/* Performance mode: full-screen blurは最も高価なレイヤーなので無効化 */
+[data-mina-performance="performance"] .lightbox {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 .filter-btn:active { transform: none; box-shadow: none; }
 .lightbox.open,
@@ -409,8 +401,8 @@ body {
     to { opacity: 1; }
 }
 @keyframes lightbox-fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 .lightbox img {
     max-width: 90vw;
@@ -448,6 +440,18 @@ body {
 }
 .lightbox-close:hover { background: rgba(255,255,255,0.22); transform: none; }
 
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .diamond-item img { transition: none; }
+    .diamond-item:hover img,
+    .diamond-inner:hover img { transform: none; }
+    .lightbox,
+    .lightbox.open,
+    .lightbox.is-open,
+    .lightbox.is-closing { animation: none; transition: none; }
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 640px) {
     .profile-card {
@@ -470,14 +474,11 @@ body {
 </head>
 <body>
 
-<!-- WebGL canvas (MinaGlass site extension) -->
-<canvas id="mina-glcanvas"></canvas>
-
-<!-- Photo slideshow background -->
+<!-- Photo slideshow background (texture supply only, hidden) -->
 <div class="bg-slideshow" id="bgSlideshow"></div>
 <div class="bg-overlay"></div>
 
-<!-- Fixed profile card (top-center, 横長) — mina-glass--liquid でWebGLレンズ効果 -->
+<!-- Fixed profile card — mina-glass--liquid でWebGLレンズ効果 -->
 <aside class="profile-card mina-glass mina-glass--liquid" id="profileCard">
 
     <div class="card-avatar-row">
@@ -519,7 +520,6 @@ body {
 
 </aside>
 
-
 <!-- Scroll area (right side) -->
 <div class="scroll-area">
 
@@ -532,6 +532,7 @@ body {
 
     <!-- Photos -->
     <div class="photos-area">
+        <div class="photos-label">Memories</div>
         <div class="filter-bar mina-glass mina-glass--liquid" id="filterBar"></div>
         <div class="diamond-area" id="collageArea"></div>
     </div>
@@ -548,31 +549,217 @@ body {
 <script src="minaui.glass.js"></script>
 <script>
 let ALL_PHOTOS = [];
-const BG_IMAGE = 'memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg';
-fetch('memories/list.json').then(r => r.json()).then(data => {
-    ALL_PHOTOS = data;
-    buildFilterBar(ALL_PHOTOS);
-    renderCollage(ALL_PHOTOS);
-});
 
-// 背景は固定画像を使用（thumbは480pxクロップのため画質劣化 → comp(フル解像度)を使用）
-(() => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => window._minaGlass.uploadTexture(img);
-    img.src = BG_IMAGE;
+/* ===== Shared diamond layout ====================================
+ * Pure function: area width + photo count -> tile placements.
+ * THE ONLY layout source: both the DOM collage and the canvas scene
+ * renderer consume the same plan, so they can never drift apart. */
+function planDiamondLayout(areaWidth, photoCount) {
+    const TARGET_TILE = 200;
+    const width = Math.max(1, areaWidth);
+    const cols = Math.max(2, Math.round(width / TARGET_TILE));
+    const S = width / cols;
+    const HALF = S / 2;
+
+    const BIG_OFFSETS = [[0, 0], [1, -1], [1, 1], [2, 0]];
+    const HUGE_OFFSETS = [[0, 0], [1, -1], [1, 1], [2, -2], [2, 0], [2, 2], [3, -1], [3, 1], [4, 0]];
+    const BIG_RATIO = 0.24;
+    const HUGE_RATIO = 0.035;
+
+    const seededRandom = seed => {
+        const x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    };
+
+    const occupied = new Set();
+    const key = (s, d) => s + ',' + d;
+    const isFree = (s, d) => !occupied.has(key(s, d));
+    const canFit = (s, d, offsets) => offsets.every(([ds, dd]) => isFree(s + ds, d + dd));
+    const mark = (s, d, offsets) => offsets.forEach(([ds, dd]) => occupied.add(key(s + ds, d + dd)));
+
+    const dLimit = 2 * cols - 1;
+    const placements = [];
+    let maxBottom = 0;
+    let s = 0;
+    const maxRows = (photoCount || 0) * 4 + 40;
+
+    while (placements.length < photoCount && s < maxRows) {
+        for (let d = (s % 2 === 0 ? 2 : 1); d <= dLimit && placements.length < photoCount; d += 2) {
+            if (!isFree(s, d)) continue;
+
+            let k = 1;
+            let offsets = [[0, 0]];
+            const rnd = seededRandom(s * 1000 + d);
+            if (rnd < HUGE_RATIO && canFit(s, d, HUGE_OFFSETS)) { k = 3; offsets = HUGE_OFFSETS; }
+            else if (rnd < HUGE_RATIO + BIG_RATIO && canFit(s, d, BIG_OFFSETS)) { k = 2; offsets = BIG_OFFSETS; }
+
+            let left = HALF * (d - k);
+            let size = k * S;
+            if (left < 0 || left + size > width) {
+                k = 1;
+                offsets = [[0, 0]];
+                left = HALF * (d - 1);
+                size = S;
+            }
+
+            mark(s, d, offsets);
+            const top = HALF * s;
+            placements.push({ left, top, size });
+            maxBottom = Math.max(maxBottom, top + size);
+        }
+        s++;
+    }
+
+    return { cols, tile: S, half: HALF, gap: 5, placements, height: maxBottom };
+}
+
+/* ===== Canvas scene renderer (shared layout) =====================
+ * Redraws the SAME diamond collage into the sceneProvider canvas so the
+ * Liquid Glass refracts the actual images behind the filterBar.
+ * - same layout plan (positions/sizes/gap) as the DOM
+ * - same object-fit: cover
+ * - same diamond clip-path polygon via canvas path
+ * - images are cached and decoded once (no per-frame decode)
+ * - scroll-synced: the canvas is drawn in VIEWPORT space using
+ *   document position - scrollY, so the sticky filterBar looks through
+ *   at exactly what is behind it. */
+const DiamondScene = (() => {
+    const imgCache = new Map();          // src -> HTMLImageElement (decoded)
+    const imgPending = new Set();
+    let sceneCanvas = null;              // offscreen scene at document scale
+    let sceneLayout = null;              // { placements, height, width }
+    let scenePhotos = [];
+    let bgImage = null;                  // fixed hero background (below diamonds)
+
+    const getPhotoImage = (src) => new Promise((resolve) => {
+        const hit = imgCache.get(src);
+        if (hit) return resolve(hit);
+        if (imgPending.has(src)) return;   // load in flight; next redraw picks it up
+        imgPending.add(src);
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            if (typeof img.decode === 'function') img.decode().catch(() => {}).then(() => {
+                imgCache.set(src, img);
+                imgPending.delete(src);
+                resolve(img);
+            });
+            else { imgCache.set(src, img); imgPending.delete(src); resolve(img); }
+        };
+        img.onerror = () => { imgPending.delete(src); resolve(null); };
+        img.src = src;
+    });
+
+    const diamondPath = (ctx, x, y, size) => {
+        ctx.beginPath();
+        ctx.moveTo(x + size / 2, y);
+        ctx.lineTo(x + size, y + size / 2);
+        ctx.lineTo(x + size / 2, y + size);
+        ctx.lineTo(x, y + size / 2);
+        ctx.closePath();
+    };
+
+    const coverDraw = (ctx, img, x, y, w, h) => {
+        const iw = img.naturalWidth || 1, ih = img.naturalHeight || 1;
+        const s = Math.max(w / iw, h / ih);
+        const dw = iw * s, dh = ih * s;
+        ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+    };
+
+    /** Draw the diamonds into a scene canvas in VIEWPORT coordinates.
+     * The provider canvas is viewport-sized; the collage lives in
+     * document space, so we translate by -scrollY. */
+    const drawScene = (ctx, state) => {
+        const w = state.cssWidth, h = state.cssHeight;
+        const scale = state.drawScale || 1;
+        const scrollY = state.scrollY || 0;
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, w * scale, h * scale);
+        ctx.fillStyle = '#0d0814';
+        ctx.fillRect(0, 0, w * scale, h * scale);
+
+        // fixed hero background (the old slideshow concept), bottom layer
+        if (bgImage) coverDraw(ctx, bgImage, 0, 0, w * scale, h * scale);
+
+        if (!sceneLayout) { ctx.restore(); return; }
+
+        const areaDocTop = sceneLayout.docTop || 0;
+        const viewTop = areaDocTop - scrollY;
+
+        for (let i = 0; i < sceneLayout.placements.length; i++) {
+            const pl = sceneLayout.placements[i];
+            const photo = scenePhotos[i];
+            if (!photo) continue;
+            const x = (pl.left) * scale;
+            const y = (viewTop + pl.top) * scale;
+            const size = pl.size * scale;
+            if (y > h * scale + 8 || y + size < -8) continue;   // viewport cull
+
+            const img = imgCache.get(photo.thumb || photo.src);
+            if (!img) { getPhotoImage(photo.thumb || photo.src); continue; }
+
+            ctx.save();
+            diamondPath(ctx, x, y, size);
+            ctx.clip();
+            // object-fit: cover — same math as CSS
+            coverDraw(ctx, img, x, y, size, size);
+            // same top-left gloss as .diamond-inner::after
+            const gloss = ctx.createLinearGradient(x, y, x + size, y + size);
+            gloss.addColorStop(0, 'rgba(255,255,255,0.35)');
+            gloss.addColorStop(0.3, 'rgba(255,255,255,0.06)');
+            gloss.addColorStop(0.55, 'rgba(255,255,255,0)');
+            gloss.addColorStop(1, 'rgba(0,0,0,0.18)');
+            ctx.fillStyle = gloss;
+            ctx.fillRect(x, y, size, size);
+            ctx.restore();
+        }
+        ctx.restore();
+    };
+
+    const setLayout = (plan, photos, docTop) => {
+        sceneLayout = Object.assign({}, plan, { docTop });
+        scenePhotos = photos;
+        // warm the image cache for everything near/after the fold
+        photos.forEach(p => getPhotoImage(p.thumb || p.src));
+    };
+
+    const setBackground = (src) => {
+        getPhotoImage(src).then(img => { bgImage = img; });
+    };
+
+    return { drawScene, setLayout, setBackground, imgCache };
 })();
 
-// ===== MinaGlass init (背景固定, list.json取得後に背景差し替え) =====
-window._minaGlass = MinaGlass.autoInit({
-    // Keep the original page's two-surface composition while using MinaGlass's
-    // expanded renderer for other sites.
-    maxCards: 2,
-    saturate: 1.5,
-    whiteLevel: 0
-});
+const BG_IMAGE = 'memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg';
+DiamondScene.setBackground(BG_IMAGE);
 
-// ===== Diamond tessellation (隙間なく敷き詰め) =====
+/* ===== MinaLiquid (overlay) =====
+ * sceneMode: 'overlay' — canvas paints ONLY the liquid regions; the DOM
+ * keeps rendering the real page below. The filterBar's glass refracts
+ * the Diamond collage via the sceneProvider above (renderer-owned scene
+ * drawn from the SAME layout plan — not a DOM screenshot). */
+window._minaLiquid = new MinaLiquid({
+    sceneMode: 'overlay',
+    backend: 'auto',
+    maxElements: 2,
+    glass: {
+        lensWarp: 0.10,      // Natural: ~6-9% apparent magnification
+        refraction: 0.34,
+        blur: 2,
+        fresnel: 0.16,
+        specular: 0.12,
+        dispersion: 0.02,
+        edgeWidth: 0.2,
+        saturation: 1.5
+    },
+    sceneProvider: {
+        render(ctx, state) { DiamondScene.drawScene(ctx, state); }
+    }
+});
+window._minaGlass = window._minaLiquid;   // legacy alias
+
+/* ===== Lightbox ===== */
 const collageArea = document.getElementById('collageArea');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
@@ -685,119 +872,150 @@ document.addEventListener('keydown', e => {
     }
 }, true);
 
+/* ===== Lazy loading (DOM tiles) ===== */
 const imgObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const img = entry.target;
-        img.src = img.dataset.src;
-        img.onload = () => img.classList.add('loaded');
-        imgObserver.unobserve(img);
-    });
+    for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        loadImageTile(entry.target);
+    }
 }, { rootMargin: '400px' });
 
-let S = window.innerWidth < 640 ? 150 : 225;
-let HALF = S / 2;
-const GAP = 5;       // 菱形間の余白
-collageArea.style.setProperty('--diamond-gap', GAP + 'px');
-
-const BIG_RATIO = 0.24;   // 中サイズを増やし、横長画面でも視線のリズムを保つ
-const HUGE_RATIO = 0.035; // 大枠
-
-// (s,d) 格子: top=HALF*s, left=HALF*(d-k)。sとdは常に同じ偶奇。
-// 大きい菱形が実際に覆う小セルの相対オフセットは実測済み（正方形ブロックではなく菱形状）。
-const BIG_OFFSETS = [[0, 0], [1, -1], [1, 1], [2, 0]];
-const HUGE_OFFSETS = [[0, 0], [1, -1], [1, 1], [2, -2], [2, 0], [2, 2], [3, -1], [3, 1], [4, 0]];
-
-function seededRandom(seed) {
-    let x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
+async function loadImageTile(img) {
+    if (img.dataset.loadStarted || !img.dataset.src) return;
+    img.dataset.loadStarted = '1';
+    imgObserver.unobserve(img);
+    img.src = img.dataset.src;
+    try {
+        if (typeof img.decode === 'function') await img.decode();
+    } catch (_) {}
+    img.classList.add('loaded');
 }
 
+/* ===== DOM collage ===== */
+let currentPhotos = [];
+let layoutWidth = 0;
+
+function applyPlacement(item, pl) {
+    item.style.left = pl.left + 'px';
+    item.style.top = pl.top + 'px';
+    item.style.width = pl.size + 'px';
+    item.style.height = pl.size + 'px';
+}
+
+function createTile(p) {
+    const item = document.createElement('div');
+    item.className = 'diamond-item';
+    const inner = document.createElement('div');
+    inner.className = 'diamond-inner';
+    inner.setAttribute('role', 'button');
+    inner.tabIndex = 0;
+    inner.setAttribute('aria-label', 'Open image');
+    const img = document.createElement('img');
+    img.decoding = 'async';
+    img.alt = '';
+    img.dataset.src = p.thumb || p.src;
+    const openFromPoint = (e) => {
+        const r = inner.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const hw = Math.max(r.width / 2, 1), hh = Math.max(r.height / 2, 1);
+        const dx = Math.abs(e.clientX - cx), dy = Math.abs(e.clientY - cy);
+        if (dx / hw + dy / hh > 1) return;
+        openLightbox(p.src, inner);
+    };
+    inner.addEventListener('click', openFromPoint);
+    inner.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        openLightbox(p.src, inner);
+    });
+    inner.appendChild(img);
+    item.appendChild(inner);
+    return item;
+}
+
+/* renderCollage: builds the DOM collage AND publishes the same layout
+ * to the scene provider. One layout source of truth. */
 function renderCollage(photos) {
+    currentPhotos = photos;
+    const w = collageArea.clientWidth;
+    layoutWidth = w;
+    const plan = planDiamondLayout(w, photos.length);
+    collageArea.style.setProperty('--diamond-gap', plan.gap + 'px');
+
+    imgObserver.disconnect();
     collageArea.innerHTML = '';
-    if (photos.length === 0) return;
 
-    const W = collageArea.clientWidth || window.innerWidth;
-    const occupied = new Set();
-    const key = (s, d) => s + ',' + d;
-    const isFree = (s, d) => !occupied.has(key(s, d));
-    const canFit = (s, d, offsets) => offsets.every(([ds, dd]) => isFree(s + ds, d + dd));
-    const mark = (s, d, offsets) => offsets.forEach(([ds, dd]) => occupied.add(key(s + ds, d + dd)));
+    const frag = document.createDocumentFragment();
+    photos.forEach((p, i) => {
+        const item = createTile(p);
+        applyPlacement(item, plan.placements[i]);
+        frag.appendChild(item);
+        imgObserver.observe(item.querySelector('img'));
+    });
+    collageArea.appendChild(frag);
+    collageArea.style.height = plan.height + 'px';
 
-    let idx = 0;
-    let maxBottom = 0;
-    let s = 0;
-    const maxS = photos.length * 4 + 40; // 安全上限
-
-    while (idx < photos.length && s < maxS) {
-        const parity = ((s % 2) + 2) % 2;
-        const dMin = Math.floor(-(W / 2) / HALF) - 4;
-        const dMax = Math.ceil((W * 1.5) / HALF) + 4;
-        let dStart = dMin + ((((dMin % 2) + 2) % 2) === parity ? 0 : 1);
-
-        for (let d = dStart; d <= dMax && idx < photos.length; d += 2) {
-            if (!isFree(s, d)) continue;
-
-            let k = 1, offsets = [[0, 0]];
-            const rnd = seededRandom(s * 1000 + d);
-            if (rnd < HUGE_RATIO && canFit(s, d, HUGE_OFFSETS)) { k = 3; offsets = HUGE_OFFSETS; }
-            else if (rnd < HUGE_RATIO + BIG_RATIO && canFit(s, d, BIG_OFFSETS)) { k = 2; offsets = BIG_OFFSETS; }
-
-            const top = HALF * s;
-            let left = HALF * (d - k);
-            let size = k * S;
-            if (left < 0 || left + size > W) {
-                k = 1; offsets = [[0, 0]];
-                left = HALF * (d - k);
-                size = k * S;
-                if (left < 0 || left + size > W) continue;
-            }
-
-            mark(s, d, offsets);
-            const p = photos[idx++];
-            const item = document.createElement('div');
-            item.className = 'diamond-item';
-            item.style.left = left + 'px';
-            item.style.top = top + 'px';
-            item.style.width = size + 'px';
-            item.style.height = size + 'px';
-
-            const inner = document.createElement('div');
-            inner.className = 'diamond-inner';
-            inner.setAttribute('role', 'button');
-            inner.tabIndex = 0;
-            inner.setAttribute('aria-label', 'Open image');
-            const img = document.createElement('img');
-            img.dataset.src = p.thumb || p.src;
-            img.loading = 'lazy';
-            img.decoding = 'async';
-            img.alt = '';
-            const openFromPoint = (e) => {
-                const r = inner.getBoundingClientRect();
-                const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-                const hw = Math.max(r.width / 2, 1), hh = Math.max(r.height / 2, 1);
-                const dx = Math.abs(e.clientX - cx), dy = Math.abs(e.clientY - cy);
-                if (dx / hw + dy / hh > 1) return;
-                openLightbox(p.src, inner);
-            };
-            inner.addEventListener('click', openFromPoint);
-            inner.addEventListener('keydown', e => {
-                if (e.key !== 'Enter' && e.key !== ' ') return;
-                e.preventDefault();
-                openLightbox(p.src, inner);
-            });
-            inner.appendChild(img);
-            item.appendChild(inner);
-            collageArea.appendChild(item);
-            imgObserver.observe(img);
-            maxBottom = Math.max(maxBottom, top + size);
-        }
-        s++;
-    }
-    collageArea.style.height = maxBottom + 'px';
+    // publish to the scene renderer: same plan, same photos, doc-space top
+    const docTop = collageArea.getBoundingClientRect().top + window.scrollY;
+    DiamondScene.setLayout(plan, photos, docTop);
+    if (window._minaLiquid) window._minaLiquid.invalidateScene();
 }
 
-// ===== フィルタバー（全部 / 年 / 月） =====
+function relayoutCollage() {
+    const items = collageArea.querySelectorAll('.diamond-item');
+    if (items.length !== currentPhotos.length) {
+        renderCollage(currentPhotos);
+        return;
+    }
+    const plan = planDiamondLayout(collageArea.clientWidth, currentPhotos.length);
+    plan.placements.forEach((pl, i) => applyPlacement(items[i], pl));
+    collageArea.style.height = plan.height + 'px';
+    const docTop = collageArea.getBoundingClientRect().top + window.scrollY;
+    DiamondScene.setLayout(plan, currentPhotos, docTop);
+    if (window._minaLiquid) window._minaLiquid.invalidateScene();
+}
+
+/* ===== Resize handling ===== */
+let resizeRaf = 0;
+function scheduleRelayout() {
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        const w = collageArea.clientWidth;
+        if (!w || Math.abs(w - layoutWidth) < 1) return;
+        layoutWidth = w;
+        relayoutCollage();
+    });
+}
+
+if (typeof ResizeObserver === 'function') {
+    const collageRO = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            const inlineSize = (entry.contentBoxSize && entry.contentBoxSize[0])
+                ? entry.contentBoxSize[0].inlineSize
+                : entry.contentRect.width;
+            if (inlineSize && Math.abs(inlineSize - layoutWidth) >= 1) {
+                scheduleRelayout();
+                return;
+            }
+        }
+    });
+    collageRO.observe(collageArea);
+} else {
+    window.addEventListener('resize', scheduleRelayout, { passive: true });
+}
+
+/* ===== Scroll sync =====
+ * The scene provider draws in viewport space (docTop - scrollY) on every
+ * invalidated scene. While scrolling, the collage moves behind the sticky
+ * filterBar continuously, so the scene must re-render per scroll tick —
+ * invalidateScene() coalesces into the renderer's single RAF per frame. */
+window.addEventListener('scroll', () => {
+    if (!window._minaLiquid || window._minaLiquid.destroyed) return;
+    window._minaLiquid.invalidateScene();
+}, { passive: true });
+
+/* ===== フィルターバー（全部 / 年 / 月） ===== */
 const filterBar = document.getElementById('filterBar');
 
 function buildFilterBar(photos) {
@@ -838,12 +1056,12 @@ function selectFilter(btn, filtered) {
     renderCollage(filtered);
 }
 
-window.addEventListener('resize', () => {
-    S = window.innerWidth < 640 ? 150 : 225;
-    HALF = S / 2;
+/* ===== Boot ===== */
+fetch('memories/list.json').then(r => r.json()).then(data => {
+    ALL_PHOTOS = data;
+    buildFilterBar(ALL_PHOTOS);
     renderCollage(ALL_PHOTOS);
 });
-
 </script>
 </body>
 </html>

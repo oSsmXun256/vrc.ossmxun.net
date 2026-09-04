@@ -1,5 +1,5 @@
 /*!
- * MinaUI v0.1.0
+ * MinaUI v0.2.0
  * A flexible, glass-ready CSS UI system for the web.
  * Copyright (c) 2026 oSsmXun
  * Released under the MIT License.
@@ -53,7 +53,11 @@
   --mina-border: rgba(255, 255, 255, 0.15);
   --mina-border-strong: rgba(255, 255, 255, 0.27);
   --mina-border-subtle: rgba(255, 255, 255, 0.08);
+  /* Fallback-only surface token used when liquid WebGL/native blur is
+     unavailable or performance mode is explicitly selected. */
+  --mina-card-bg: rgba(24, 19, 42, 0.8);
   --mina-glass-bg: rgba(20, 15, 35, 0.48);
+  --mina-liquid-native-bg: rgba(24, 19, 42, 0.3);
   --mina-glass-bg-light: rgba(255, 255, 255, 0.1);
   --mina-glass-border: rgba(255, 255, 255, 0.24);
   --mina-glass-blur: 18px;
@@ -92,6 +96,15 @@
   --mina-trans-fast: 140ms cubic-bezier(.2, .8, .2, 1);
   --mina-trans-base: 220ms cubic-bezier(.2, .8, .2, 1);
   --mina-trans-slow: 360ms cubic-bezier(.2, .8, .2, 1);
+  /* Layer contract (bottom → top):
+     backdrop-deep < backdrop < glass-canvas < base content < sticky <
+     dropdown < drawer < overlay < modal < toast < tooltip.
+     Sites should consume these variables instead of hard-coding z-index. */
+  --mina-z-backdrop-deep: -2;
+  --mina-z-backdrop: -1;
+  --mina-z-glass-canvas: 0;
+  --mina-z-scrim: 2;
+  --mina-z-content: 5;
   --mina-z-base: 0;
   --mina-z-sticky: 20;
   --mina-z-dropdown: 100;
@@ -138,7 +151,9 @@
   --mina-border: rgba(42, 24, 68, .14);
   --mina-border-strong: rgba(42, 24, 68, .26);
   --mina-border-subtle: rgba(42, 24, 68, .08);
+  --mina-card-bg: rgba(255, 255, 255, .84);
   --mina-glass-bg: rgba(255, 255, 255, .6);
+  --mina-liquid-native-bg: rgba(255, 255, 255, .4);
   --mina-glass-bg-light: rgba(255, 255, 255, .75);
   --mina-glass-border: rgba(255, 255, 255, .72);
   --mina-shadow-sm: 0 2px 8px rgba(40, 24, 63, .08);
@@ -243,7 +258,7 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 .mina-shell::before {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: var(--mina-z-backdrop-deep);
   content: "";
   pointer-events: none;
   background: var(--mina-gradient-aura);
@@ -252,7 +267,7 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 .mina-backdrop {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: var(--mina-z-backdrop);
   pointer-events: none;
   background: var(--mina-gradient-aura);
   opacity: .75;
@@ -264,15 +279,31 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
   content: "";
   background: linear-gradient(135deg, rgba(9, 8, 18, .7), rgba(9, 8, 18, .18) 55%, rgba(9, 8, 18, .62));
 }
+/* WebGL liquid-glass canvas. Sits above decorative backdrops and below all
+ * content (see --mina-z-glass-canvas). pointer-events:none keeps the huge
+ * fixed layer from ever intercepting input; it must never cover content. */
 #mina-glcanvas, #aqua-glcanvas {
   position: fixed;
   inset: 0;
   display: block;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  z-index: var(--mina-z-glass-canvas);
   pointer-events: none;
 }
+/* Shared immersive-page layers: WebGL canvas -> readable scrim -> content. */
+.mina-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--mina-z-scrim);
+  pointer-events: none;
+  background: linear-gradient(135deg,
+    rgba(8, 3, 18, .5) 0%,
+    rgba(8, 3, 18, .3) 40%,
+    rgba(8, 3, 18, .1) 70%,
+    rgba(8, 3, 18, .3) 100%);
+}
+.mina-content { position: relative; z-index: var(--mina-z-content); }
 .mina-container {
   width: min(100% - 2rem, 80rem);
   margin-inline: auto;
@@ -358,26 +389,92 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
    SURFACES, CARDS, MEDIA
    ========================================================================== */
 
-.mina-glass, .mina-card, .mina-panel {
+/* Surface/elevation contract (three distinct surface levels):
+   - .mina-card / .mina-panel are the standard translucent surfaces:
+      background + border + shadow only. No backdrop-filter, so pages can
+      stack dozens of them without multiplying GPU layers.
+   - .mina-glass is the explicit opt-in to frosted glass (real
+      backdrop-filter). Combine it when a surface really sits over busy
+      imagery: `class="mina-card mina-glass"`.
+   - .mina-liquid / [data-mina-liquid] marks a Liquid Glass lens element for
+      the optional WebGL renderer (minaui.glass.js, class MinaLiquid). By
+      itself it renders as a solid translucent surface so content stays
+      readable without JS; the renderer swaps the appearance via state
+      classes (mina-liquid-gl / mina-liquid-native / mina-liquid-static).
+   - .mina-glass--liquid is the deprecated V2 alias of .mina-liquid.
+   - .mina-card--static / .mina-card--interactive express interaction intent
+      without changing the shared surface identity.
+   - --mina-shadow-sm is for compact/supporting surfaces, --mina-shadow-md is
+      the standard surface height and --mina-shadow-lg is for transient or
+      strongly elevated layers. */
+.mina-card, .mina-panel {
+  border: 1px solid var(--mina-glass-border);
+  border-radius: var(--mina-radius-xl);
+  background: var(--mina-glass-bg);
+  box-shadow: var(--mina-shadow-md);
+}
+.mina-glass {
   border: 1px solid var(--mina-glass-border);
   border-radius: var(--mina-radius-xl);
   background: var(--mina-glass-bg);
   box-shadow: var(--mina-shadow-md);
   -webkit-backdrop-filter: blur(var(--mina-glass-blur)) saturate(var(--mina-glass-saturate));
   backdrop-filter: blur(var(--mina-glass-blur)) saturate(var(--mina-glass-saturate));
+  /* containment (paint/layout clipping) without a forced compositor layer;
+     backdrop-filter already promotes the element when it is actually used */
+  contain: layout paint;
 }
-.mina-glass { contain: layout paint; transform: translateZ(0); }
+/* Opt-in compositor-layer promotion for special cases (dragging surfaces,
+   janky scroll areas). Do NOT apply site-wide; each layer costs memory. */
+.mina-gpu { transform: translateZ(0); will-change: transform; }
 .mina-glass--light { background: var(--mina-glass-bg-light); }
 .mina-glass--dark { background: rgba(0, 0, 0, .2); border-color: rgba(255, 255, 255, .2); }
+/* Liquid Glass (WebGL, minaui.glass.js V3). The element itself is only a
+   geometry holder: position, size and radius feed the renderer. Without JS
+   (or before init) it degrades to a readable translucent surface. */
+.mina-liquid, [data-mina-liquid] {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--mina-glass-border);
+  border-radius: var(--mina-radius-xl);
+  background: var(--mina-card-bg);
+  box-shadow: var(--mina-shadow-md);
+}
+/* Renderer state classes (applied by minaui.glass.js):
+   -gl  = WebGL backend owns the pixels (element becomes fully transparent)
+   -native = CSS backdrop-filter fallback
+   -static = last-resort translucent surface (same as the base style) */
+.mina-liquid-gl {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.45), 0 1px 12px rgba(0,0,0,.25);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Deprecated V2 liquid alias — keep rendering sane, prefer .mina-liquid. */
 .mina-glass--liquid, .mina-glass-liquid { position: relative; overflow: hidden; color: #fff; background: transparent; border: 0; border-radius: var(--mina-radius-xl); box-shadow: none; text-shadow: 0 1px 3px rgba(0,0,0,.45), 0 1px 12px rgba(0,0,0,.25); -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* MinaGlass fallback backends (applied automatically by minaui.glass.js).
+   native = CSS backdrop-filter per element, static = translucent surface only. */
+.mina-liquid-native { background: var(--mina-liquid-native-bg); -webkit-backdrop-filter: blur(var(--mina-glass-blur)) saturate(var(--mina-glass-saturate)); backdrop-filter: blur(var(--mina-glass-blur)) saturate(var(--mina-glass-saturate)); }
+.mina-liquid-static { background: var(--mina-card-bg); border: 1px solid var(--mina-glass-border); }
+[data-theme="light"] .mina-liquid-native { background: var(--mina-liquid-native-bg); }
+[data-theme="light"] .mina-liquid-static { background: var(--mina-card-bg); border-color: var(--mina-border); }
 .mina-glass--solid, .mina-card--solid, .mina-panel--solid { background: var(--mina-surface-solid); }
 .mina-glass--sm, .mina-card--sm { border-radius: var(--mina-radius-md); }
 .mina-glass--lg, .mina-card--lg { border-radius: var(--mina-radius-2xl); }
 .mina-glass--borderless { border-color: transparent; }
 .mina-card { display: flex; flex-direction: column; overflow: hidden; }
-.mina-card--interactive { transition: transform var(--mina-trans-base), border-color var(--mina-trans-base), box-shadow var(--mina-trans-base), background var(--mina-trans-base); }
+.mina-card--static { cursor: default; }
+.mina-card--interactive { position: relative; transition: transform var(--mina-trans-base), border-color var(--mina-trans-base), box-shadow var(--mina-trans-base), background var(--mina-trans-base); }
 .mina-card--interactive:hover { border-color: var(--mina-border-strong); box-shadow: var(--mina-shadow-lg); transform: translateY(-3px); }
 .mina-card--interactive:active { transform: translateY(-1px); }
+.mina-card--interactive:focus-visible { outline: 2px solid var(--mina-primary); outline-offset: 3px; box-shadow: var(--mina-shadow-lg), var(--mina-focus-ring); }
+a.mina-card--interactive { display: flex; color: var(--mina-fg); text-decoration: none; }
+.mina-card--interactive::after { position: absolute; top: var(--mina-space-4); right: var(--mina-space-4); color: var(--mina-primary); content: "↗"; opacity: 0; transform: translate(-.2rem, .2rem); transition: opacity var(--mina-trans-fast), transform var(--mina-trans-fast); }
+.mina-card--interactive:hover::after, .mina-card--interactive:focus-visible::after { opacity: 1; transform: translate(0, 0); }
+.mina-card__action { display: inline-flex; align-items: center; gap: var(--mina-space-2); color: var(--mina-primary); font-size: .8125rem; font-weight: 750; }
 .mina-card--glow:hover { box-shadow: var(--mina-shadow-lg), var(--mina-shadow-glow); }
 .mina-card__header, .mina-card__body, .mina-card__footer { padding: var(--mina-space-6); }
 .mina-card__header { border-bottom: 1px solid var(--mina-border-subtle); }
@@ -389,7 +486,7 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 .mina-panel--floating { position: absolute; z-index: var(--mina-z-sticky); max-height: 92vh; overflow-y: auto; border-radius: var(--mina-radius-2xl); color: var(--mina-fg); }
 .mina-cover { position: relative; min-height: 15rem; overflow: hidden; border-radius: var(--mina-radius-xl); background: var(--mina-surface-muted); }
 .mina-cover > img, .mina-cover > video { width: 100%; height: 100%; min-height: inherit; object-fit: cover; }
-.mina-cover__overlay { position: absolute; inset: auto 0 0; padding: var(--mina-space-6); background: linear-gradient(transparent, rgba(0,0,0,.72)); }
+.mina-cover__overlay { position: absolute; inset: auto 0 0; display: flex; flex-direction: column; align-items: flex-start; gap: .2rem; padding: var(--mina-space-6); background: linear-gradient(transparent, rgba(0,0,0,.72)); }
 .mina-avatar { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; overflow: hidden; border: 2px solid var(--mina-glass-border); border-radius: 50%; color: var(--mina-fg); background: var(--mina-primary-soft); font-weight: 750; }
 .mina-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .mina-avatar--sm { width: 2rem; height: 2rem; font-size: .75rem; }
@@ -485,8 +582,9 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
   outline: 0;
   color: var(--mina-fg);
   background: var(--mina-glass-bg);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  /* no backdrop-filter: inputs multiply easily and blur-per-field is a
+     classic GPU-layer budget killer. Add .mina-glass explicitly when a
+     field really floats over imagery. */
   transition: border-color var(--mina-trans-fast), box-shadow var(--mina-trans-fast), background var(--mina-trans-fast);
 }
 .mina-textarea { min-height: 7rem; resize: vertical; }
@@ -503,7 +601,7 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 .mina-input-group > :first-child { border-top-left-radius: var(--mina-radius-md); border-bottom-left-radius: var(--mina-radius-md); }
 .mina-input-group > :last-child { border-top-right-radius: var(--mina-radius-md); border-bottom-right-radius: var(--mina-radius-md); }
 .mina-input-group__addon { display: inline-flex; align-items: center; padding-inline: .85rem; border: 1px solid var(--mina-border); color: var(--mina-fg-muted); background: var(--mina-surface-muted); font-size: .875rem; white-space: nowrap; }
-.mina-input-shell { display: flex; height: 2.875rem; align-items: center; gap: .625rem; padding-inline: .9rem; border: 1px solid var(--mina-border); border-radius: var(--mina-radius-pill); color: var(--mina-fg); background: var(--mina-glass-bg); -webkit-backdrop-filter: blur(var(--mina-glass-blur)); backdrop-filter: blur(var(--mina-glass-blur)); }
+.mina-input-shell { display: flex; height: 2.875rem; align-items: center; gap: .625rem; padding-inline: .9rem; border: 1px solid var(--mina-border); border-radius: var(--mina-radius-pill); color: var(--mina-fg); background: var(--mina-glass-bg); }
 .mina-input-shell:focus-within { border-color: var(--mina-primary); box-shadow: var(--mina-focus-ring); }
 .mina-input-shell input { flex: 1 1 auto; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; color: inherit; background: transparent; font: inherit; }
 .mina-input-shell input::placeholder { color: var(--mina-fg-subtle); }
@@ -545,6 +643,12 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 .mina-tabs__tab[aria-selected="true"]::after { background: var(--mina-primary); }
 .mina-tabs__panel { padding-top: var(--mina-space-6); }
 .mina-tabs__panel[hidden] { display: none; }
+.mina-tabs-layout--vertical { display: grid; grid-template-columns: minmax(10rem, 13rem) minmax(0, 1fr); gap: var(--mina-space-6); align-items: start; padding: var(--mina-space-2); border: 1px solid var(--mina-border); border-radius: var(--mina-radius-xl); background: var(--mina-surface-muted); }
+.mina-tabs-layout--vertical > .mina-tabs { display: flex; flex-direction: column; gap: .25rem; overflow: visible; border: 0; }
+.mina-tabs-layout--vertical > .mina-tabs .mina-tabs__tab { width: 100%; border-radius: var(--mina-radius-md); text-align: left; }
+.mina-tabs-layout--vertical > .mina-tabs .mina-tabs__tab::after { top: .55rem; right: auto; bottom: .55rem; left: 0; width: 2px; height: auto; }
+.mina-tabs-layout--vertical > .mina-tabs__panel { min-width: 0; padding: var(--mina-space-4); }
+@media (max-width: 42rem) { .mina-tabs-layout--vertical { grid-template-columns: 1fr; } .mina-tabs-layout--vertical > .mina-tabs { flex-direction: row; overflow-x: auto; } .mina-tabs-layout--vertical > .mina-tabs .mina-tabs__tab { width: auto; flex: 0 0 auto; text-align: center; } .mina-tabs-layout--vertical > .mina-tabs .mina-tabs__tab::after { top: auto; right: .85rem; bottom: -.0625rem; left: .85rem; width: auto; height: 2px; } }
 .mina-dropdown { position: relative; display: inline-block; }
 .mina-dropdown__menu { position: absolute; top: calc(100% + .5rem); right: 0; z-index: var(--mina-z-dropdown); min-width: 12rem; max-height: 20rem; overflow: auto; padding: .35rem; border: 1px solid var(--mina-glass-border); border-radius: var(--mina-radius-lg); background: var(--mina-surface-raised); box-shadow: var(--mina-shadow-lg); -webkit-backdrop-filter: blur(var(--mina-glass-blur)); backdrop-filter: blur(var(--mina-glass-blur)); opacity: 0; pointer-events: none; transform: translateY(-.35rem); transition: opacity var(--mina-trans-fast), transform var(--mina-trans-fast); }
 .mina-dropdown.is-open .mina-dropdown__menu { opacity: 1; pointer-events: auto; transform: translateY(0); }
@@ -722,7 +826,85 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .mina-hover-grow { transition: none; }
+  .mina-hover-grow:hover { transform: none; }
 }
+
+/* ==========================================================================
+   PERFORMANCE MODE
+   <html data-mina-performance="quality | balanced | performance">
+   Missing attribute preserves the original full glass visuals. Use balanced
+   or performance explicitly when a page needs a lower-cost mode.
+   "quality" keeps every effect, including animated blur.
+   "balanced" keeps the static look of quality but swaps animated
+   backdrop-filter keyframes for cheap opacity fades and lets MinaGlass
+   render with its cheaper 9-tap shader.
+   "performance" cuts the expensive stuff on low-end hardware:
+   smaller/no blur, cheaper surfaces, no glow, no infinite decorative loops,
+   no animated backdrop-filter. prefers-reduced-motion still wins overall.
+   ========================================================================== */
+
+/* balanced: same resting visuals as quality, no animated backdrop-filter.
+   The two keyframes below animate backdrop-filter per frame; replacing them
+   with an opacity fade keeps entrances smooth without the per-frame blur
+   re-render. MinaGlass reads the same attribute for its 9-tap shader. */
+[data-mina-performance="balanced"] .mina-glass-blur-in { animation: mina-fade-in .5s ease both; }
+[data-mina-performance="balanced"] .mina-backdrop-blur-in { animation: mina-fade-in .5s ease both; }
+
+[data-mina-performance="performance"] {
+  --mina-glass-blur: 8px;
+  --mina-glass-saturate: 110%;
+  --mina-card-bg: rgba(24, 19, 42, .88);
+  --mina-glass-bg: rgba(20, 15, 35, .66);
+  --mina-shadow-md: var(--mina-shadow-sm);
+  --mina-shadow-lg: var(--mina-shadow-sm);
+  --mina-shadow-glow: none;
+}
+[data-theme="light"][data-mina-performance="performance"] {
+  --mina-card-bg: rgba(255, 255, 255, .92);
+  --mina-glass-bg: rgba(255, 255, 255, .78);
+}
+/* Drop backdrop-filter entirely in performance mode; the more opaque surface
+   tokens above keep contrast readable without any extra render pass. */
+[data-mina-performance="performance"] .mina-glass,
+[data-mina-performance="performance"] .mina-btn--glass,
+[data-mina-performance="performance"] .mina-btn-glass,
+[data-mina-performance="performance"] .mina-badge--glass,
+[data-mina-performance="performance"] .mina-badge-glass,
+[data-mina-performance="performance"] .mina-input,
+[data-mina-performance="performance"] .mina-select,
+[data-mina-performance="performance"] .mina-textarea,
+[data-mina-performance="performance"] .mina-input-shell,
+[data-mina-performance="performance"] .mina-nav--glass,
+[data-mina-performance="performance"] .mina-dropdown__menu,
+[data-mina-performance="performance"] .mina-modal__dialog,
+[data-mina-performance="performance"] .mina-drawer,
+[data-mina-performance="performance"] .mina-toast,
+[data-mina-performance="performance"] .mina-backdrop-blur,
+[data-mina-performance="performance"] .mina-backdrop-blur-md,
+[data-mina-performance="performance"] .mina-backdrop-blur-lg,
+[data-mina-performance="performance"] .mina-liquid-native {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Infinite decorative animations are pure GPU burn; disable them but keep
+   functional state feedback (spin loaders, transitions). The skeleton
+   shimmer is replaced by its static background so placeholders stay
+   visible. Glow colors are already removed via --mina-shadow-glow above. */
+[data-mina-performance="performance"] .mina-pulse,
+[data-mina-performance="performance"] .mina-anim-pulse,
+[data-mina-performance="performance"] .mina-glow,
+[data-mina-performance="performance"] .mina-glow-glass,
+[data-mina-performance="performance"] .mina-shimmer,
+[data-mina-performance="performance"] .mina-glass-shimmer,
+[data-mina-performance="performance"] .mina-gradient-animated,
+[data-mina-performance="performance"] .mina-text-shimmer {
+  animation: none;
+}
+[data-mina-performance="performance"] .mina-skeleton::after { animation: none; }
+
+/* Body scroll lock applied by minaui.js on <html> while a modal is open */
+html[data-mina-modal-open] { overflow: hidden; }
 
 /* ==========================================================================
    EFFECT API
@@ -777,7 +959,9 @@ a.mina-link { text-decoration: underline; text-underline-offset: .18em; }
 .mina-glass-shimmer { animation: mina-glass-shimmer 2.5s linear infinite; }
 .mina-shimmer { animation: mina-shimmer 2.5s linear infinite; }
 .mina-hover-grow { transition: transform var(--mina-trans-base); }
-.mina-hover-grow:hover { transform: scale(1.05); }
+@media (hover: hover) and (pointer: fine) {
+  .mina-hover-grow:hover { transform: scale(1.05); }
+}
 .mina-hover-dim { transition: opacity var(--mina-trans-base); }
 .mina-hover-dim:hover { opacity: .7; }
 .mina-hover-bright { transition: opacity var(--mina-trans-base), box-shadow var(--mina-trans-base); }
