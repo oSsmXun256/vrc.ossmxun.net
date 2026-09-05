@@ -312,6 +312,10 @@ const testLoadAutoInvalidates = async () => {
     const body = m && m[1];
     check('lightbox fade-out starts at opacity 1', /from\s*\{\s*opacity:\s*1\s*;?\s*\}/.test(body || ''), String(body).trim());
     check('lightbox fade-out ends at opacity 0', /to\s*\{\s*opacity:\s*0\s*;?\s*\}/.test(body || ''), String(body).trim());
+    check('lightbox releases MinaUI modal lock before removing is-open',
+        /if \(window\.MinaUI\) MinaUI\.close\(lightbox\);\s*lightbox\.classList\.remove\('is-closing', 'open', 'is-open'\)/.test(html));
+    check('reopening an open lightbox does not add a second modal lock',
+        /const wasOpen = !lightbox\.hidden[\s\S]*?if \(!wasOpen\) lightbox\.classList\.remove\('is-open'\)/.test(html));
 }
 
 /* ---- 11. source checks: no hardcoded paddings, background/click contracts ---- */
@@ -333,6 +337,12 @@ const testLoadAutoInvalidates = async () => {
     check('renderCollage passes document-space rect (scrollX in docLeft)',
         /rect\.left \+ window\.scrollX/.test(html) && /rect\.top \+ window\.scrollY/.test(html));
     check('imgPending is a Map (not a Set)', /imgPending = new Map\(\)/.test(sceneCode));
+    check('filter bar clears the fixed profile card on desktop and mobile',
+        /--filter-sticky-top:\s*200px/.test(html) && /@media \(max-width: 640px\)[\s\S]*?--filter-sticky-top:\s*336px/.test(html));
+    check('diamond hover keeps the existing image scale effect',
+        /diamond-item\.is-hovered img[\s\S]*?scale\(1\.08\)/.test(html));
+    check('pointer fallback updates a single hovered diamond',
+        /let hoveredDiamond = null[\s\S]*?if \(hoveredDiamond\) hoveredDiamond\.classList\.remove\('is-hovered'\)[\s\S]*?if \(next\) next\.classList\.add\('is-hovered'\)/.test(html));
 }
 
 /* ---- main: async tests first, then the summary ---- */

@@ -19,6 +19,7 @@
     --mina-glass-bg: rgba(160, 60, 100, 0.22);
     --mina-glass-bg-light: rgba(160, 60, 100, 0.30);
     --mina-glass-border: rgba(255, 255, 255, 0.25);
+    --filter-sticky-top: 200px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -328,7 +329,9 @@ body {
 /* Hover演出は実際にhoverできる端末のみ */
 @media (hover: hover) and (pointer: fine) {
     .diamond-item:hover img,
-    .diamond-inner:hover img { transform: scale(1.08); }
+    .diamond-inner:hover img,
+    .diamond-item.is-hovered img,
+    .diamond-inner.is-hovered img { transform: scale(1.08); }
 }
 
 /* ===== Filter bar =====
@@ -336,7 +339,7 @@ body {
    このバーの「背景」としてだけ見え、文字/ボタンは常に前面。 */
 .filter-bar {
     position: sticky;
-    top: 24px;
+    top: var(--filter-sticky-top);
     z-index: 20;
     display: flex;
     flex-wrap: wrap;
@@ -452,7 +455,9 @@ body {
     html { scroll-behavior: auto; }
     .diamond-item img { transition: none; }
     .diamond-item:hover img,
-    .diamond-inner:hover img { transform: none; }
+    .diamond-inner:hover img,
+    .diamond-item.is-hovered img,
+    .diamond-inner.is-hovered img { transform: none; }
     .lightbox,
     .lightbox.open,
     .lightbox.is-open,
@@ -461,6 +466,7 @@ body {
 
 /* ===== Mobile ===== */
 @media (max-width: 640px) {
+    :root { --filter-sticky-top: 336px; }
     .profile-card {
         top: 16px;
         padding: 16px 18px;
@@ -474,7 +480,7 @@ body {
     .stat-grid { flex-wrap: wrap; }
     .scroll-area { padding: 0 16px 48px; }
     .photos-area { padding-top: 40px; }
-    .filter-bar { top: 12px; padding: 10px 12px; }
+    .filter-bar { padding: 10px 12px; }
     .lightbox img { max-width: 96vw; max-height: 82vh; }
 }
 </style>
@@ -881,8 +887,8 @@ function preloadLightboxImage(src) {
 function finishLightboxClose() {
     window.clearTimeout(lightboxCloseTimer);
     lightboxCloseTimer = 0;
-    lightbox.classList.remove('is-closing', 'open', 'is-open');
     if (window.MinaUI) MinaUI.close(lightbox);
+    lightbox.classList.remove('is-closing', 'open', 'is-open');
     lightboxImg.hidden = true;
     lightboxImg.removeAttribute('src');
     lightbox.removeAttribute('aria-busy');
@@ -902,7 +908,7 @@ function setLightboxOpen(open) {
     ++lightboxRequest;
     window.clearTimeout(lightboxCloseTimer);
     lightboxCloseTimer = 0;
-    lightbox.classList.remove('open', 'is-open');
+    lightbox.classList.remove('open');
     lightbox.classList.add('is-closing');
     lightbox.setAttribute('aria-hidden', 'false');
     lightboxCloseTimer = window.setTimeout(finishLightboxClose, 320);
@@ -914,7 +920,8 @@ async function openLightbox(src, trigger) {
     lightboxCloseTimer = 0;
     lightboxTrigger = trigger || document.activeElement;
     const wasOpen = !lightbox.hidden && (lightbox.classList.contains('open') || lightbox.classList.contains('is-open'));
-    lightbox.classList.remove('is-closing', 'open', 'is-open');
+    lightbox.classList.remove('is-closing', 'open');
+    if (!wasOpen) lightbox.classList.remove('is-open');
     lightboxImg.hidden = true;
     lightbox.setAttribute('aria-busy', 'true');
     if (!wasOpen) lightbox.hidden = true;
@@ -1023,26 +1030,53 @@ function createTile(p) {
 
 /* Negative stacking is required so the liquid canvas can refract the DOM
  * tiles, but some Chromium hit-test paths skip that layer for pointer input.
- * Keep the normal tile handler and recover those clicks from document space. */
-document.addEventListener('click', e => {
-    if (e.defaultPrevented || e.target.closest?.('.diamond-inner')) return;
-    const hit = document.elementFromPoint(e.clientX, e.clientY);
-    if (hit?.closest?.('.profile-card, .filter-bar, .lightbox, a, button')) return;
-
+ * Keep the normal tile handler and recover those clicks/hover states from
+ * document space. */
+function findDiamondAtPoint(x, y) {
     const inners = collageArea.querySelectorAll('.diamond-inner');
     for (const inner of inners) {
         const r = inner.getBoundingClientRect();
-        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) continue;
+        if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dx = Math.abs(e.clientX - cx), dy = Math.abs(e.clientY - cy);
+        const dx = Math.abs(x - cx), dy = Math.abs(y - cy);
         const hw = Math.max(r.width / 2, 1), hh = Math.max(r.height / 2, 1);
-        if (dx / hw + dy / hh <= 1) {
-            e.preventDefault();
-            openLightbox(inner.dataset.lightboxSrc, inner);
-            return;
-        }
+        if (dx / hw + dy / hh <= 1) return inner;
     }
+    return null;
+}
+
+function isProtectedPoint(x, y) {
+    const hit = document.elementFromPoint(x, y);
+    return hit?.closest?.('.profile-card, .filter-bar, .lightbox, a, button');
+}
+
+document.addEventListener('click', e => {
+    if (e.defaultPrevented || e.target.closest?.('.diamond-inner')) return;
+    if (isProtectedPoint(e.clientX, e.clientY)) return;
+
+    const inner = findDiamondAtPoint(e.clientX, e.clientY);
+    if (!inner) return;
+    e.preventDefault();
+    openLightbox(inner.dataset.lightboxSrc, inner);
 }, true);
+
+let hoveredDiamond = null;
+let hoverPoint = null;
+let hoverRaf = 0;
+function updateDiamondHover() {
+    hoverRaf = 0;
+    const next = hoverPoint && !isProtectedPoint(hoverPoint.x, hoverPoint.y)
+        ? findDiamondAtPoint(hoverPoint.x, hoverPoint.y)
+        : null;
+    if (next === hoveredDiamond) return;
+    if (hoveredDiamond) hoveredDiamond.classList.remove('is-hovered');
+    if (next) next.classList.add('is-hovered');
+    hoveredDiamond = next;
+}
+document.addEventListener('pointermove', e => {
+    hoverPoint = { x: e.clientX, y: e.clientY };
+    if (!hoverRaf) hoverRaf = requestAnimationFrame(updateDiamondHover);
+}, { passive: true, capture: true });
 
 /* renderCollage: builds the DOM collage AND publishes the same layout
  * to the scene provider. One layout source of truth. */
