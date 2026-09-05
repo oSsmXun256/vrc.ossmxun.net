@@ -86,12 +86,12 @@ const SCENE_STATE_READY = 'ready';
 const SCENE_STATE_FAILED = 'failed';
 
 /* Global glass appearance. V3.3 refraction-first ordering: lensWarp is the
- * lead effect (Natural ~7% apparent magnification), edge refraction second,
+ * lead effect (Natural ~12% apparent magnification), edge refraction second,
  * blur a light support (1-3px equivalent at the center band), specular and
  * dispersion deliberately quiet. */
 const DEFAULT_GLASS = {
     refraction: 0.34,
-    lensWarp: 0.10,
+    lensWarp: 0.14,
     blur: 2,
     fresnel: 0.16,
     specular: 0.12,
@@ -310,8 +310,8 @@ void main() {
          * shape, unlike the V2 (uv - center) * scale trick.
          * warp(r) = lensWarp * (0.4 + 0.6 * r^1.4) * (1 - handover):
          * linear-in-p displacement |D| = warp * |p| over the interior =>
-         * uniform apparent magnification M = 1/(1-warp) (Natural 0.10 ->
-         * mid-band ~6.7%, Strong 0.20 -> ~14%, V2 ref 0.18 rim ~18%).
+         * uniform apparent magnification M = 1/(1-warp) (Natural 0.14 ->
+         * mid-band ~12%, Strong 0.27 -> ~26%, V2 ref 0.18 rim ~18%).
          * handover = smoothstep(0.55, 1.0, t) fades the warp inside the
          * rim bevel so edge refraction takes over continuously. */
         vec2 q = p / half_;
@@ -927,11 +927,12 @@ class MinaLiquid {
      *   background-size:     cover
      *   background-position: center
      *   background-repeat:   no-repeat
+     *   target rect:         viewport-sized and viewport-aligned (±1 CSS px)
      * Everything else (multi-layer, gradients, repeat, contain, explicit
      * px/% sizes, keyword/arbitrary positions) is explicitly UNSUPPORTED
-     * and fails the scene cleanly — no silent mis-draw. The drawn geometry
-     * is plain viewport cover-fit, which is exactly what the above four
-     * values produce, so the parsed contract and the pixels always match.
+     * and fails the scene cleanly — no silent mis-draw. The target must also
+     * cover the viewport; arbitrary element-sized backgrounds are not
+     * silently reinterpreted as viewport-sized scenes.
      * WebGL still cannot capture arbitrary DOM; this only maps that one
      * simple CSS background to the scene texture.
      *
@@ -949,6 +950,21 @@ class MinaLiquid {
         let cs;
         try { cs = getComputedStyle(target); } catch (error) { cs = null; }
         if (!cs) { this._sceneFailed('css-background: getComputedStyle failed'); return; }
+
+        const viewportW = typeof window !== 'undefined' ? window.innerWidth : 0;
+        const viewportH = typeof window !== 'undefined' ? window.innerHeight : 0;
+        const rect = typeof target.getBoundingClientRect === 'function'
+            ? target.getBoundingClientRect()
+            : null;
+        const withinViewport = rect && viewportW > 0 && viewportH > 0
+            && Math.abs(rect.left) <= 1
+            && Math.abs(rect.top) <= 1
+            && Math.abs(rect.width - viewportW) <= 1
+            && Math.abs(rect.height - viewportH) <= 1;
+        if (!withinViewport) {
+            this._sceneFailed('css-background: target must match the viewport (within 1 CSS px)');
+            return;
+        }
 
         const image = cs.backgroundImage || '';
         const urls = image.match(/url\((['"]?)([^'")]+)\1\)/g) || [];
@@ -1356,7 +1372,19 @@ class MinaLiquid {
             : [[0, '#0b0716'], [0.5, '#ec4899'], [1, '#8b5cf6']];
         const angle = typeof spec.angle === 'number' ? spec.angle : 135;
         const rad = angle * Math.PI / 180;
-        const grad = ctx.createLinearGradient(0, 0, 1024 * Math.cos(rad), 1024 * Math.sin(rad));
+        /* Match CSS linear-gradient angles independent of aspect ratio:
+         * 0deg points upward, 90deg right, and color stop 0 starts at the
+         * projected edge opposite the angle direction. */
+        const dirX = Math.sin(rad);
+        const dirY = -Math.cos(rad);
+        const center = 512;
+        const extent = (1024 * Math.abs(dirX) + 1024 * Math.abs(dirY)) / 2;
+        const grad = ctx.createLinearGradient(
+            center - dirX * extent,
+            center - dirY * extent,
+            center + dirX * extent,
+            center + dirY * extent
+        );
         for (const [offset, color] of stops) grad.addColorStop(clampValue(offset, 0, 1), color);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1024, 1024);

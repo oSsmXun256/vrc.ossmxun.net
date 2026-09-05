@@ -725,7 +725,24 @@ const DiamondScene = (() => {
          * hero photo (the DOM .bg-slideshow is display:none). */
         ctx.fillStyle = '#0d0814';
         ctx.fillRect(0, 0, w * scale, h * scale);
-        const overlay = ctx.createLinearGradient(0, 0, w * scale, h * scale);
+        /* Match the DOM .bg-overlay linear-gradient(135deg, ...). CSS
+         * angles are aspect-ratio independent, so use the gradient's
+         * projected extent instead of the canvas diagonal. */
+        const gradientAngle = 135 * Math.PI / 180;
+        const gradientDirX = Math.sin(gradientAngle);
+        const gradientDirY = -Math.cos(gradientAngle);
+        const gradientW = w * scale;
+        const gradientH = h * scale;
+        const gradientExtent = (gradientW * Math.abs(gradientDirX)
+            + gradientH * Math.abs(gradientDirY)) / 2;
+        const gradientCenterX = gradientW / 2;
+        const gradientCenterY = gradientH / 2;
+        const overlay = ctx.createLinearGradient(
+            gradientCenterX - gradientDirX * gradientExtent,
+            gradientCenterY - gradientDirY * gradientExtent,
+            gradientCenterX + gradientDirX * gradientExtent,
+            gradientCenterY + gradientDirY * gradientExtent
+        );
         overlay.addColorStop(0, 'rgba(8, 3, 18, 0.55)');
         overlay.addColorStop(0.4, 'rgba(8, 3, 18, 0.35)');
         overlay.addColorStop(0.7, 'rgba(8, 3, 18, 0.15)');
@@ -801,7 +818,7 @@ window._minaLiquid = new MinaLiquid({
     backend: 'auto',
     maxElements: 2,
     glass: {
-        lensWarp: 0.10,      // Natural: ~6-9% apparent magnification
+        lensWarp: 0.14,      // Natural: ~10-13% apparent magnification
         refraction: 0.34,
         blur: 2,
         fresnel: 0.16,

@@ -96,7 +96,10 @@ function makeRecordingCtx() {
         setTransform() { calls.push(['setTransform']); },
         clearRect(x, y, w, h) { calls.push(['clearRect', x, y, w, h]); },
         fillRect(x, y, w, h) { calls.push(['fillRect', x, y, w, h, ctx.fillStyle]); },
-        createLinearGradient() { return grad; },
+        createLinearGradient(x0, y0, x1, y1) {
+            calls.push(['createLinearGradient', x0, y0, x1, y1]);
+            return grad;
+        },
         beginPath() {},
         moveTo(x, y) { calls.push(['moveTo', x, y]); },
         lineTo(x, y) { calls.push(['lineTo', x, y]); },
@@ -289,6 +292,14 @@ const testLoadAutoInvalidates = async () => {
     check('vrc base scene paints the .bg-overlay gradient second',
         fills[1] && fills[1][5] === ctx.grad,
         `second fill uses the created gradient`);
+    const gradient = ctx.calls.find(c => c[0] === 'createLinearGradient');
+    const expectedExtent = (1280 + 800) / (2 * Math.sqrt(2));
+    check('vrc base scene uses CSS 135deg gradient endpoints',
+        gradient && Math.abs(gradient[1] - (640 - expectedExtent / Math.sqrt(2))) < 1e-6 &&
+        Math.abs(gradient[2] - (400 - expectedExtent / Math.sqrt(2))) < 1e-6 &&
+        Math.abs(gradient[3] - (640 + expectedExtent / Math.sqrt(2))) < 1e-6 &&
+        Math.abs(gradient[4] - (400 + expectedExtent / Math.sqrt(2))) < 1e-6,
+        `gradient=${gradient && gradient.slice(1).map(v => v.toFixed(2)).join(',')}`);
     const coverDraws = ctx.calls.filter(c => c[0] === 'drawImage');
     check('vrc base scene has NO background photo behind diamonds',
         coverDraws.every(c => c[1] === 'a.jpg'),
