@@ -42,9 +42,11 @@
  *   owned   — this canvas renders the full-viewport scene + glass. The
  *             page behind is expected to be empty; out alpha = 1.
  *   overlay — the browser keeps rendering the normal DOM/CSS background;
- *             this canvas paints ONLY the glass regions. out alpha = 0
- *             outside glass, coverage-alpha (SDF AA) inside, so DOM content
- *             under/around the glass shows through untouched. The scene
+ *             this canvas paints ONLY the glass regions. Alpha contract:
+ *             exactly 0 outside the glass (AA boundary included), coverage
+ *             alpha inside, so DOM content under/around the glass shows
+ *             through untouched. Contact shadows outside the glass are the
+ *             page's job (CSS box-shadow), never scene alpha. The scene
  *             source still cannot be arbitrary DOM: it is a renderer-owned
  *             image/video/canvas/gradient/css-background/sceneProvider.
  *
@@ -398,12 +400,13 @@ void main() {
 
     float sceneAlpha = uHasScene > 0.5 ? 1.0 : 0.0;
     ${overlay ? `
-    /* overlay mode: paint ONLY the glass regions. Outside glass and
-     * outside the contact-shadow halo alpha = 0 so the DOM/CSS
-     * background below the canvas stays visible. */
+    /* overlay mode: paint ONLY the glass regions. Contract:
+     *   outside glass -> alpha = 0 (DOM/CSS background shows through,
+     *   untouched), inside glass -> SDF coverage alpha (AA boundary only).
+     * The contact-shadow halo must NOT extend alpha (or scene pixels)
+     * outside the glass; an outer shadow belongs to CSS (box-shadow). */
     float covOut = owner >= 0 ? clamp(0.5 - bestSdf, 0.0, 1.0) : 0.0;
-    float haloOut = owner >= 0 ? (1.0 - clamp(bestSdf / 10.0, 0.0, 1.0)) * (1.0 - covOut) : 0.0;
-    float aOut = max(covOut, haloOut * 0.85) * sceneAlpha;
+    float aOut = covOut * sceneAlpha;
     outColor = vec4(color * aOut, aOut);` : `
     /* owned mode: the canvas IS the background; fully opaque when a
      * scene is present. */
@@ -919,15 +922,24 @@ class MinaLiquid {
     }
 
     /* ---- css-background source -----------------------------------
-     * Reads ONE simple background layer from getComputedStyle(target):
-     *   background-image: url(...)  (single url, no gradients)
-     *   background-size:   cover | contain | <len> <len>
-     *   background-position: <len> <len> | center | left/right/top/bottom
-     *   background-repeat: no-repeat (anything else -> unsupported)
-     * Complex backgrounds (multiple layers, gradients, repeat) are
-     * explicitly UNSUPPORTED and fail the scene cleanly — no silent
-     * mis-draw. WebGL still cannot capture arbitrary DOM; this only maps
-     * a CSS background image to the scene texture with matching geometry. */
+     * SUPPORTED contract (keep docs in sync — LIQUID-GLASS.md):
+     *   background-image:    exactly one url()
+     *   background-size:     cover
+     *   background-position: center
+     *   background-repeat:   no-repeat
+     * Everything else (multi-layer, gradients, repeat, contain, explicit
+     * px/% sizes, keyword/arbitrary positions) is explicitly UNSUPPORTED
+     * and fails the scene cleanly — no silent mis-draw. The drawn geometry
+     * is plain viewport cover-fit, which is exactly what the above four
+     * values produce, so the parsed contract and the pixels always match.
+     * WebGL still cannot capture arbitrary DOM; this only maps that one
+     * simple CSS background to the scene texture.
+     *
+     * Load lifecycle: the Image is NOT adopted (nor uploaded) until it has
+     * fired onload AND decoded. Before that the scene stays 'loading' with
+     * the CSS fallback surface visible — an RAF that runs between src= and
+     * onload can never see naturalWidth=0 and fail the scene (real-browser
+     * race the old FakeImage hid). */
     _setupCssBackground(spec) {
         const target = spec.target || (typeof document !== 'undefined' ? document.body : null);
         if (!target || typeof getComputedStyle !== 'function') {
@@ -945,72 +957,44 @@ class MinaLiquid {
             return;
         }
         const src = urls[0].replace(/url\((['"]?)([^'")]+)\1\)/, '$2');
-        if (!src || src.startsWith('data:')) {
-            // data: URLs work too, but keep the parser simple: reject empty.
-            if (!src) { this._sceneFailed('css-background: empty url()'); return; }
-        }
+        if (!src) { this._sceneFailed('css-background: empty url()'); return; }
 
-        const size = (cs.backgroundSize || 'auto').trim().toLowerCase();
-        const pos = (cs.backgroundPosition || '0% 0%').trim().toLowerCase();
-        const repeat = (cs.backgroundRepeat || 'repeat').trim().toLowerCase();
+        const size = (cs.backgroundSize || '').trim().toLowerCase();
+        const pos = (cs.backgroundPosition || '').trim().toLowerCase();
+        const repeat = (cs.backgroundRepeat || '').trim().toLowerCase();
+        if (size !== 'cover') {
+            this._sceneFailed('css-background: only background-size cover is supported (got "' + size + '")');
+            return;
+        }
+        if (pos !== 'center' && pos !== 'center center' && pos !== '50% 50%') {
+            this._sceneFailed('css-background: only background-position center is supported (got "' + pos + '")');
+            return;
+        }
         if (repeat !== 'no-repeat' && repeat !== 'no-repeat no-repeat') {
             this._sceneFailed('css-background: only no-repeat is supported (got "' + repeat + '")');
             return;
         }
 
-        const px = (value, percentOf) => {
-            if (value.endsWith('px')) return parseFloat(value) || 0;
-            if (value.endsWith('%')) return (parseFloat(value) || 0) / 100 * percentOf;
-            return null;
-        };
-        const sizeParts = size.split(/\s+/);
-        let sizeInfo;
-        if (sizeParts[0] === 'cover') sizeInfo = { mode: 'cover' };
-        else if (sizeParts[0] === 'contain') sizeInfo = { mode: 'contain' };
-        else if (sizeParts.length >= 2) {
-            const w = px(sizeParts[0], 0), h = px(sizeParts[1], 0);
-            sizeInfo = (w !== null && h !== null) ? { mode: 'explicit', w, h } : null;
-        } else sizeInfo = null;
-        if (!sizeInfo) { this._sceneFailed('css-background: unsupported background-size "' + size + '"'); return; }
+        // Minimal info retained for future extensions (contain, explicit
+        // sizes, arbitrary positions). Today everything above must already
+        // be cover/center/no-repeat, so nothing here is used for sampling.
+        this._cssBgInfo = { target, src, sizeInfo: { mode: 'cover' }, posInfo: { mode: 'center' }, repeat };
 
-        const posParts = pos.split(/\s+/);
-        const resolvePos = (value, axisSize, viewportSize) => {
-            if (value === 'center') return { kind: 'center' };
-            if (value === 'left' || value === 'top') return { kind: 'edge0' };
-            if (value === 'right' || value === 'bottom') return { kind: 'edge1' };
-            if (value.endsWith('%')) return { kind: 'percent', value: (parseFloat(value) || 0) / 100, axisSize, viewportSize };
-            if (value.endsWith('px')) return { kind: 'px', value: parseFloat(value) || 0, axisSize, viewportSize };
-            return null;
-        };
-        // For position we need the element box; capture at invalidate time.
-        let posInfo;
-        try {
-            const rect = target.getBoundingClientRect();
-            const width = rect.width || 0;
-            const height = rect.height || 0;
-            const posX = resolvePos(posParts[0] || '0%', 0, width);
-            const posY = resolvePos(posParts[1] || posParts[0] || '0%', 0, height);
-            // resolve keywords/percent to concrete px offsets (for explicit mode)
-            posInfo = { x: posX, y: posY, width, height, raw: pos };
-        } catch (error) {
-            posInfo = null;
-        }
-        if (!posInfo) { this._sceneFailed('css-background: cannot resolve background-position'); return; }
-
-        this._cssBgInfo = { target, src, sizeInfo, posInfo, repeat };
-
-        // Load the image (generation-guarded like any async source)
+        // Load the image (generation-guarded like any async source).
+        // Adoption happens ONLY after onload (+ decode); the CSS fallback
+        // stays in place while loading.
         const token = this._sourceToken;
         const self = this;
         const img = typeof Image !== 'undefined' ? new Image() : null;
         if (!img) { this._sceneFailed('css-background: no Image constructor'); return; }
         img.crossOrigin = 'anonymous';
-        img.onload = function () {
+        img.onload = async function () {
             if (self.destroyed || self._sourceToken !== token) return;
-            self._sourceEl = img;
-            self._sceneDirty = true;
-            self._emptyDrawn = false;
-            self.requestRender();
+            if (typeof img.decode === 'function') {
+                try { await img.decode(); } catch (error) { /* keep going: onload already fired */ }
+            }
+            if (self.destroyed || self._sourceToken !== token) return;
+            self._adoptSourceElement(img);
         };
         img.onerror = function () {
             if (self.destroyed || self._sourceToken !== token) return;
@@ -1018,9 +1002,6 @@ class MinaLiquid {
             self._sceneFailed('css-background image load error');
         };
         if (img.src !== src) img.src = src;
-        this._sourceEl = img;   // provisional: uploaded once decoded
-        this._sceneDirty = true;
-        this.requestRender();
     }
 
     /* ---- sceneProvider source -----------------------------------
@@ -1047,8 +1028,15 @@ class MinaLiquid {
             return;
         }
         this._ensureProviderCanvas();
+
+        // First draw decides everything: a throwing provider fails the
+        // scene IMMEDIATELY (no element adoption, no loading transition
+        // afterwards — a failed -> loading regression is forbidden). Only a
+        // successful first draw adopts the provider canvas as the source.
+        const ok = this._drawProviderScene();
+        if (!ok) return;   // already failed: state stays 'failed', no retry
+
         this._sourceEl = this._providerCanvas;
-        this._drawProviderScene();
         this._sceneDirty = true;
         this._emptyDrawn = false;
         this._setSceneState(SCENE_STATE_LOADING);
@@ -1095,7 +1083,10 @@ class MinaLiquid {
     }
 
     /* Mark the scene failed: stop tracking, drop the GPU scene, show the CSS
-     * surface. Never leaves a transparent element behind. */
+     * surface, and STOP every scheduling path. A failed scene must not
+     * re-enter the provider/scene chain from the render loop — the only way
+     * out is an explicit setSource()/invalidateScene() from the page. Never
+     * leaves a transparent element behind. */
     _sceneFailed(reason) {
         console.warn('MinaLiquid: scene failed:', reason);
         this._teardownVideo();
@@ -1103,10 +1094,11 @@ class MinaLiquid {
         this._ownsVideoEl = false;
         this._hasScene = false;
         this._sceneFrameDrawn = false;
+        this._providerRender = null;      // a throwing provider never runs again
+        this._emptyDrawn = false;
         this._setSceneState(SCENE_STATE_FAILED);
-        this._sceneDirty = true;
         this._syncElementClasses();
-        this.requestRender();
+        this.requestRender();   // one final empty frame; _frame() no-ops on FAILED
     }
 
     _setSceneState(next) {
@@ -1567,12 +1559,16 @@ class MinaLiquid {
     _renderSceneChain() {
         const gl = this.gl;
         if (!gl) return;
+        // A failed scene is terminal: no provider re-render, no upload, no
+        // retry loop. The next attempt must come from an explicit setSource().
+        if (this.sceneState === SCENE_STATE_FAILED) return;
         const cfg = QUALITY_CONFIG[this.quality];
         if (!this._ensureTargets()) return;
 
         // sceneProvider: redraw into the provider canvas ONLY when the
         // scene is dirty (this method only runs on dirty) — never every
-        // frame unconditionally.
+        // frame unconditionally. A provider that already threw once is
+        // detached (_providerRender = null), so it can never run again.
         if (this._sourceSpec && this._sourceSpec.type === 'sceneProvider') {
             this._ensureProviderCanvas();
             this._sourceEl = this._providerCanvas;

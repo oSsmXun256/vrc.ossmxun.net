@@ -32,20 +32,22 @@ body {
 }
 
 /*
-  CONCEPT B (V3.3 overlay edition): 写真が背景（fixed）として敷かれ、その上に
-  プロフィールカードが fixed で浮かぶ。Memories の Diamond は通常のDOM描画の
+  CONCEPT B (V3.3 overlay edition): Memories の Diamond は通常のDOM描画の
   まま、その上に sticky の日付フィルターバー (Liquid Glass) が浮く。
+  プロフィールカードは fixed で浮く (canvas より上)。
 
   Liquid Glass は sceneMode: 'overlay' で動作:
-    - WebGL canvas はガラス領域だけを描く (外側は完全透明)
+    - WebGL canvas はガラス領域だけを描く (境界 +1px 以外は alpha = 0)
     - Diamond は canvas より下、filterBar の中身は canvas より上
+    - Scene Provider は「実DOMで実際に見えているもの」だけを再現する:
+      body #0d0814 + .bg-overlay グラデーション (BG写真は描かない)
 
   Layer契約 (root stacking context, 上から):
-    20  .filter-bar        (sticky, above the liquid canvas)
-    10  .profile-card      (fixed, above the canvas)
-     0  #mina-glcanvas     (fixed liquid overlay canvas)
-    -1  .diamond-area      (below the canvas: refracted through it)
-    -2  .bg-overlay       (fixed dim, behind the diamonds)
+     20  .filter-bar        (sticky, above the liquid canvas)
+     10  .profile-card      (fixed, above the canvas)
+      0  #mina-glcanvas     (fixed liquid overlay canvas)
+     -1  .diamond-area      (below the canvas: refracted through it)
+     -2  .bg-overlay       (fixed dim, behind the diamonds)
    CSSは要素ごとにposition/transformでstacking contextを作らないこと。
 */
 
@@ -56,7 +58,8 @@ body {
 }
 
 /* ===== Photo slideshow background ===== */
-/* WebGLが背景を屈折描画するため、生画像レイヤーは非表示（テクスチャ供給専用） */
+/* V3.3 修正: Scene Provider は「実DOMで見えているもの」(#0d0814 + bg-overlay
+   gradient) のみ再現するため、背景写真レイヤーは完全廃止 (display:none)。 */
 .bg-slideshow {
     display: none;
 }
@@ -401,8 +404,8 @@ body {
     to { opacity: 1; }
 }
 @keyframes lightbox-fade-out {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
 .lightbox img {
     max-width: 90vw;
@@ -554,6 +557,7 @@ let ALL_PHOTOS = [];
  * Pure function: area width + photo count -> tile placements.
  * THE ONLY layout source: both the DOM collage and the canvas scene
  * renderer consume the same plan, so they can never drift apart. */
+/* @gallery-layout:start */
 function planDiamondLayout(areaWidth, photoCount) {
     const TARGET_TILE = 200;
     const width = Math.max(1, areaWidth);
@@ -612,43 +616,81 @@ function planDiamondLayout(areaWidth, photoCount) {
 
     return { cols, tile: S, half: HALF, gap: 5, placements, height: maxBottom };
 }
+/* @gallery-layout:end */
 
 /* ===== Canvas scene renderer (shared layout) =====================
  * Redraws the SAME diamond collage into the sceneProvider canvas so the
  * Liquid Glass refracts the actual images behind the filterBar.
  * - same layout plan (positions/sizes/gap) as the DOM
- * - same object-fit: cover
- * - same diamond clip-path polygon via canvas path
- * - images are cached and decoded once (no per-frame decode)
- * - scroll-synced: the canvas is drawn in VIEWPORT space using
- *   document position - scrollY, so the sticky filterBar looks through
- *   at exactly what is behind it. */
+ * - same object-fit: cover, same diamond clip, same gloss
+ * - the DOM gap (--diamond-gap) shrinks the visible diamond INSIDE each
+ *   tile: the scene must apply the same gap or images read 5px larger
+ *   through the glass than in the DOM
+ * - layout is anchored in DOCUMENT space (docLeft/docTop measured from the
+ *   real collageArea rect); the scene draws in viewport space via
+ *   docLeft - scrollX / docTop - scrollY. Hardcoding the .scroll-area
+ *   padding (48px/16px) is FORBIDDEN — the real DOM rect is the source.
+ * - images are cached and decoded once (duplicate requests join the SAME
+ *   in-flight Promise); a finished load/decode coalesces ONE scene
+ *   invalidation per frame so tiles appear in the glass without any user
+ *   interaction.
+ * - the scene base reproduces what the page REALLY shows behind the glass:
+ *   body #0d0814 + the .bg-overlay gradient. The old fixed hero photo was
+ *   removed (the DOM hides it), so the glass can never reveal a background
+ *   that does not exist on the page. */
+/* @diamond-scene:start */
 const DiamondScene = (() => {
     const imgCache = new Map();          // src -> HTMLImageElement (decoded)
-    const imgPending = new Set();
-    let sceneCanvas = null;              // offscreen scene at document scale
-    let sceneLayout = null;              // { placements, height, width }
-    let scenePhotos = [];
-    let bgImage = null;                  // fixed hero background (below diamonds)
+    const imgPending = new Map();         // src -> Promise (in-flight loads)
 
-    const getPhotoImage = (src) => new Promise((resolve) => {
+    let sceneCanvas = null;              // offscreen scene at document scale
+    let sceneLayout = null;              // { placements, height, docLeft, docTop, gap }
+    let scenePhotos = [];
+
+    let sceneInvalidatePending = false;
+    /** Coalesced scene invalidation: 100 resolved images in one frame must
+     * schedule exactly ONE redraw, not 100 (and zero while loading). */
+    const scheduleSceneInvalidate = () => {
+        if (sceneInvalidatePending) return;
+        sceneInvalidatePending = true;
+        requestAnimationFrame(() => {
+            sceneInvalidatePending = false;
+            if (window._minaLiquid && !window._minaLiquid.destroyed) {
+                window._minaLiquid.invalidateScene();
+            }
+        });
+    };
+
+    /** Resolve the decoded image for src. Concurrent requests for the same
+     * src JOIN the same Promise (a Set here used to strand callers). */
+    const getPhotoImage = (src) => {
         const hit = imgCache.get(src);
-        if (hit) return resolve(hit);
-        if (imgPending.has(src)) return;   // load in flight; next redraw picks it up
-        imgPending.add(src);
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            if (typeof img.decode === 'function') img.decode().catch(() => {}).then(() => {
+        if (hit) return Promise.resolve(hit);
+        const pending = imgPending.get(src);
+        if (pending) return pending;
+
+        const promise = new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            const settle = () => {
                 imgCache.set(src, img);
                 imgPending.delete(src);
                 resolve(img);
-            });
-            else { imgCache.set(src, img); imgPending.delete(src); resolve(img); }
-        };
-        img.onerror = () => { imgPending.delete(src); resolve(null); };
-        img.src = src;
-    });
+                // decoded pixels entered the cache -> the glass scene must
+                // redraw even with zero user interaction (no scroll/resize).
+                scheduleSceneInvalidate();
+            };
+            img.onload = () => {
+                if (typeof img.decode === 'function') {
+                    img.decode().then(settle).catch(() => { imgPending.delete(src); resolve(null); });
+                } else settle();
+            };
+            img.onerror = () => { imgPending.delete(src); resolve(null); };
+            img.src = src;
+        });
+        imgPending.set(src, promise);
+        return promise;
+    };
 
     const diamondPath = (ctx, x, y, size) => {
         ctx.beginPath();
@@ -668,30 +710,41 @@ const DiamondScene = (() => {
 
     /** Draw the diamonds into a scene canvas in VIEWPORT coordinates.
      * The provider canvas is viewport-sized; the collage lives in
-     * document space, so we translate by -scrollY. */
+     * document space, so translate by the live scroll offsets. */
     const drawScene = (ctx, state) => {
         const w = state.cssWidth, h = state.cssHeight;
         const scale = state.drawScale || 1;
+        const scrollX = state.scrollX || 0;
         const scrollY = state.scrollY || 0;
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, w * scale, h * scale);
+
+        /* Base = exactly what the DOM shows behind the glass:
+         * body background + the fixed .bg-overlay gradient. No hidden
+         * hero photo (the DOM .bg-slideshow is display:none). */
         ctx.fillStyle = '#0d0814';
         ctx.fillRect(0, 0, w * scale, h * scale);
-
-        // fixed hero background (the old slideshow concept), bottom layer
-        if (bgImage) coverDraw(ctx, bgImage, 0, 0, w * scale, h * scale);
+        const overlay = ctx.createLinearGradient(0, 0, w * scale, h * scale);
+        overlay.addColorStop(0, 'rgba(8, 3, 18, 0.55)');
+        overlay.addColorStop(0.4, 'rgba(8, 3, 18, 0.35)');
+        overlay.addColorStop(0.7, 'rgba(8, 3, 18, 0.15)');
+        overlay.addColorStop(1, 'rgba(8, 3, 18, 0.35)');
+        ctx.fillStyle = overlay;
+        ctx.fillRect(0, 0, w * scale, h * scale);
 
         if (!sceneLayout) { ctx.restore(); return; }
 
-        const areaDocTop = sceneLayout.docTop || 0;
-        const viewTop = areaDocTop - scrollY;
+        // document-space anchor -> viewport space (both axes)
+        const viewLeft = (sceneLayout.docLeft || 0) - scrollX;
+        const viewTop = (sceneLayout.docTop || 0) - scrollY;
+        const gap = (sceneLayout.gap || 0) * scale;
 
         for (let i = 0; i < sceneLayout.placements.length; i++) {
             const pl = sceneLayout.placements[i];
             const photo = scenePhotos[i];
             if (!photo) continue;
-            const x = (pl.left) * scale;
+            const x = (viewLeft + pl.left) * scale;
             const y = (viewTop + pl.top) * scale;
             const size = pl.size * scale;
             if (y > h * scale + 8 || y + size < -8) continue;   // viewport cull
@@ -699,40 +752,44 @@ const DiamondScene = (() => {
             const img = imgCache.get(photo.thumb || photo.src);
             if (!img) { getPhotoImage(photo.thumb || photo.src); continue; }
 
+            /* DOM: .diamond-inner { inset: var(--diamond-gap) } — the visible
+             * diamond (clip + image + gloss) is the tile shrunk by gap on
+             * every side. The scene must draw the SAME inner shape. */
+            const innerX = x + gap;
+            const innerY = y + gap;
+            const innerSize = size - gap * 2;
+
             ctx.save();
-            diamondPath(ctx, x, y, size);
+            diamondPath(ctx, innerX, innerY, innerSize);
             ctx.clip();
-            // object-fit: cover — same math as CSS
-            coverDraw(ctx, img, x, y, size, size);
+            // object-fit: cover — same math as CSS, on the inner box
+            coverDraw(ctx, img, innerX, innerY, innerSize, innerSize);
             // same top-left gloss as .diamond-inner::after
-            const gloss = ctx.createLinearGradient(x, y, x + size, y + size);
+            const gloss = ctx.createLinearGradient(innerX, innerY, innerX + innerSize, innerY + innerSize);
             gloss.addColorStop(0, 'rgba(255,255,255,0.35)');
             gloss.addColorStop(0.3, 'rgba(255,255,255,0.06)');
             gloss.addColorStop(0.55, 'rgba(255,255,255,0)');
             gloss.addColorStop(1, 'rgba(0,0,0,0.18)');
             ctx.fillStyle = gloss;
-            ctx.fillRect(x, y, size, size);
+            ctx.fillRect(innerX, innerY, innerSize, innerSize);
             ctx.restore();
         }
         ctx.restore();
     };
 
-    const setLayout = (plan, photos, docTop) => {
-        sceneLayout = Object.assign({}, plan, { docTop });
+    /** Publish the layout in DOCUMENT space. docLeft/docTop come from the
+     * real collageArea rect (never hardcoded paddings) so the scene and
+     * the DOM can never drift horizontally or vertically. */
+    const setLayout = (plan, photos, docLeft, docTop) => {
+        sceneLayout = Object.assign({}, plan, { docLeft: docLeft || 0, docTop: docTop || 0 });
         scenePhotos = photos;
         // warm the image cache for everything near/after the fold
         photos.forEach(p => getPhotoImage(p.thumb || p.src));
     };
 
-    const setBackground = (src) => {
-        getPhotoImage(src).then(img => { bgImage = img; });
-    };
-
-    return { drawScene, setLayout, setBackground, imgCache };
+    return { drawScene, setLayout, imgCache, getPhotoImage };
 })();
-
-const BG_IMAGE = 'memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg';
-DiamondScene.setBackground(BG_IMAGE);
+/* @diamond-scene:end */
 
 /* ===== MinaLiquid (overlay) =====
  * sceneMode: 'overlay' — canvas paints ONLY the liquid regions; the DOM
@@ -955,9 +1012,13 @@ function renderCollage(photos) {
     collageArea.appendChild(frag);
     collageArea.style.height = plan.height + 'px';
 
-    // publish to the scene renderer: same plan, same photos, doc-space top
-    const docTop = collageArea.getBoundingClientRect().top + window.scrollY;
-    DiamondScene.setLayout(plan, photos, docTop);
+    // publish to the scene renderer: same plan, same photos, document-space
+    // anchor (docLeft AND docTop from the real rect — .scroll-area padding
+    // is 48px desktop / 16px mobile but it is NEVER hardcoded here)
+    const rect = collageArea.getBoundingClientRect();
+    const docLeft = rect.left + window.scrollX;
+    const docTop = rect.top + window.scrollY;
+    DiamondScene.setLayout(plan, photos, docLeft, docTop);
     if (window._minaLiquid) window._minaLiquid.invalidateScene();
 }
 
@@ -970,8 +1031,10 @@ function relayoutCollage() {
     const plan = planDiamondLayout(collageArea.clientWidth, currentPhotos.length);
     plan.placements.forEach((pl, i) => applyPlacement(items[i], pl));
     collageArea.style.height = plan.height + 'px';
-    const docTop = collageArea.getBoundingClientRect().top + window.scrollY;
-    DiamondScene.setLayout(plan, currentPhotos, docTop);
+    const rect = collageArea.getBoundingClientRect();
+    const docLeft = rect.left + window.scrollX;
+    const docTop = rect.top + window.scrollY;
+    DiamondScene.setLayout(plan, currentPhotos, docLeft, docTop);
     if (window._minaLiquid) window._minaLiquid.invalidateScene();
 }
 
