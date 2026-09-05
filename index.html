@@ -40,14 +40,14 @@ body {
     - WebGL canvas はガラス領域だけを描く (境界 +1px 以外は alpha = 0)
     - Diamond は canvas より下、filterBar の中身は canvas より上
     - Scene Provider は「実DOMで実際に見えているもの」だけを再現する:
-      body #0d0814 + .bg-overlay グラデーション (BG写真は描かない)
+      body #0d0814 + BG写真 + .bg-overlay グラデーション
 
   Layer契約 (root stacking context, 上から):
      20  .filter-bar        (sticky, above the liquid canvas)
      10  .profile-card      (fixed, above the canvas)
       0  #mina-glcanvas     (fixed liquid overlay canvas)
      -1  .diamond-area      (below the canvas: refracted through it)
-     -2  .bg-overlay       (fixed dim, behind the diamonds)
+     -2  .bg-slideshow/.bg-overlay (fixed photo + dim layer, behind diamonds)
    CSSは要素ごとにposition/transformでstacking contextを作らないこと。
 */
 
@@ -58,10 +58,14 @@ body {
 }
 
 /* ===== Photo slideshow background ===== */
-/* V3.3 修正: Scene Provider は「実DOMで見えているもの」(#0d0814 + bg-overlay
-   gradient) のみ再現するため、背景写真レイヤーは完全廃止 (display:none)。 */
+/* Fixed hero photo: the DOM keeps the real page background visible between
+   and around the Diamond tiles. The scene provider mirrors the same photo. */
 .bg-slideshow {
-    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: url("memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg") center / cover no-repeat;
+    pointer-events: none;
 }
 
 /* 背景グラデーションマスク: Diamondより後ろ */
@@ -281,7 +285,7 @@ body {
 .diamond-item {
     position: absolute;
     z-index: -1;
-    pointer-events: none;
+    pointer-events: auto;
 }
 .diamond-inner {
     position: absolute;
@@ -635,9 +639,7 @@ function planDiamondLayout(areaWidth, photoCount) {
  *   invalidation per frame so tiles appear in the glass without any user
  *   interaction.
  * - the scene base reproduces what the page REALLY shows behind the glass:
- *   body #0d0814 + the .bg-overlay gradient. The old fixed hero photo was
- *   removed (the DOM hides it), so the glass can never reveal a background
- *   that does not exist on the page. */
+ *   body #0d0814 + the fixed hero photo + the .bg-overlay gradient. */
 /* @diamond-scene:start */
 const DiamondScene = (() => {
     const imgCache = new Map();          // src -> HTMLImageElement (decoded)
@@ -646,6 +648,7 @@ const DiamondScene = (() => {
     let sceneCanvas = null;              // offscreen scene at document scale
     let sceneLayout = null;              // { placements, height, docLeft, docTop, gap }
     let scenePhotos = [];
+    let bgImage = null;                  // fixed hero background (decoded)
 
     let sceneInvalidatePending = false;
     /** Coalesced scene invalidation: 100 resolved images in one frame must
@@ -721,10 +724,10 @@ const DiamondScene = (() => {
         ctx.clearRect(0, 0, w * scale, h * scale);
 
         /* Base = exactly what the DOM shows behind the glass:
-         * body background + the fixed .bg-overlay gradient. No hidden
-         * hero photo (the DOM .bg-slideshow is display:none). */
+         * body background + the fixed hero photo + .bg-overlay gradient. */
         ctx.fillStyle = '#0d0814';
         ctx.fillRect(0, 0, w * scale, h * scale);
+        if (bgImage) coverDraw(ctx, bgImage, 0, 0, w * scale, h * scale);
         /* Match the DOM .bg-overlay linear-gradient(135deg, ...). CSS
          * angles are aspect-ratio independent, so use the gradient's
          * projected extent instead of the canvas diagonal. */
@@ -804,7 +807,15 @@ const DiamondScene = (() => {
         photos.forEach(p => getPhotoImage(p.thumb || p.src));
     };
 
-    return { drawScene, setLayout, imgCache, getPhotoImage };
+    const setBackground = (src) => {
+        getPhotoImage(src).then(img => {
+            if (!img) return;
+            bgImage = img;
+            scheduleSceneInvalidate();
+        });
+    };
+
+    return { drawScene, setLayout, setBackground, imgCache, getPhotoImage };
 })();
 /* @diamond-scene:end */
 
@@ -832,6 +843,8 @@ window._minaLiquid = new MinaLiquid({
     }
 });
 window._minaGlass = window._minaLiquid;   // legacy alias
+const BG_IMAGE = 'memories/comp/2024-11/VRChat_2024-11-24_23-47-50.148_1920x1080.jpg';
+DiamondScene.setBackground(BG_IMAGE);
 
 /* ===== Lightbox ===== */
 const collageArea = document.getElementById('collageArea');
@@ -984,6 +997,7 @@ function createTile(p) {
     inner.setAttribute('role', 'button');
     inner.tabIndex = 0;
     inner.setAttribute('aria-label', 'Open image');
+    inner.dataset.lightboxSrc = p.src;
     const img = document.createElement('img');
     img.decoding = 'async';
     img.alt = '';
@@ -1006,6 +1020,29 @@ function createTile(p) {
     item.appendChild(inner);
     return item;
 }
+
+/* Negative stacking is required so the liquid canvas can refract the DOM
+ * tiles, but some Chromium hit-test paths skip that layer for pointer input.
+ * Keep the normal tile handler and recover those clicks from document space. */
+document.addEventListener('click', e => {
+    if (e.defaultPrevented || e.target.closest?.('.diamond-inner')) return;
+    const hit = document.elementFromPoint(e.clientX, e.clientY);
+    if (hit?.closest?.('.profile-card, .filter-bar, .lightbox, a, button')) return;
+
+    const inners = collageArea.querySelectorAll('.diamond-inner');
+    for (const inner of inners) {
+        const r = inner.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) continue;
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = Math.abs(e.clientX - cx), dy = Math.abs(e.clientY - cy);
+        const hw = Math.max(r.width / 2, 1), hh = Math.max(r.height / 2, 1);
+        if (dx / hw + dy / hh <= 1) {
+            e.preventDefault();
+            openLightbox(inner.dataset.lightboxSrc, inner);
+            return;
+        }
+    }
+}, true);
 
 /* renderCollage: builds the DOM collage AND publishes the same layout
  * to the scene provider. One layout source of truth. */

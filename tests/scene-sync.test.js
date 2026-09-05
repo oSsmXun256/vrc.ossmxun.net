@@ -7,7 +7,7 @@
 //   - scrollX/scrollY mapping (3 scroll positions; deltaScene == -deltaScroll)
 //   - imgPending is a Map: duplicate requests join the SAME Promise
 //   - image load/decode coalesces exactly ONE scene invalidation per frame
-//   - the scene base matches the visible DOM background (no hidden BG image)
+//   - the scene base matches the visible DOM background (hero photo + overlay)
 //   - the lightbox fade-out keyframes go 1 -> 0
 'use strict';
 const fs = require('fs');
@@ -277,7 +277,7 @@ const testLoadAutoInvalidates = async () => {
         sandbox.window._invalidateCount - before === 1);
 };
 
-/* ---- 9. base background = #0d0814 + gradient (no photo) ---- */
+/* ---- 9. base background = #0d0814 + hero photo + gradient ---- */
 {
     const { DiamondScene } = loadDiamondScene();
     DiamondScene.setLayout(PLAN, PHOTOS, 48, 1000);
@@ -301,9 +301,9 @@ const testLoadAutoInvalidates = async () => {
         Math.abs(gradient[4] - (400 + expectedExtent / Math.sqrt(2))) < 1e-6,
         `gradient=${gradient && gradient.slice(1).map(v => v.toFixed(2)).join(',')}`);
     const coverDraws = ctx.calls.filter(c => c[0] === 'drawImage');
-    check('vrc base scene has NO background photo behind diamonds',
+    check('vrc base scene draws only the cached diamond photo when no hero is loaded',
         coverDraws.every(c => c[1] === 'a.jpg'),
-        'every drawImage is a diamond tile, no BG_IMAGE');
+        'every drawImage is a diamond tile');
 }
 
 /* ---- 10. lightbox fade-out contract ---- */
@@ -314,13 +314,18 @@ const testLoadAutoInvalidates = async () => {
     check('lightbox fade-out ends at opacity 0', /to\s*\{\s*opacity:\s*0\s*;?\s*\}/.test(body || ''), String(body).trim());
 }
 
-/* ---- 11. source checks: no hardcoded paddings, no BG_IMAGE ---- */
+/* ---- 11. source checks: no hardcoded paddings, background/click contracts ---- */
 {
     const sceneCode = sceneMatch[1];
     check('DiamondScene has no hardcoded 48px padding', !sceneCode.includes('48'));
     check('DiamondScene has no hardcoded 16px padding', !/\b16\b/.test(sceneCode));
-    check('DiamondScene does not draw a fixed BG photo', !sceneCode.includes('setBackground') && !sceneCode.includes('bgImage'));
-    check('index no longer feeds a BG_IMAGE to the scene', !/const BG_IMAGE/.test(html));
+    check('DiamondScene supports the fixed BG photo',
+        sceneCode.includes('setBackground') && sceneCode.includes('bgImage'));
+    check('index feeds the fixed BG_IMAGE to the scene', /const BG_IMAGE/.test(html) && /DiamondScene\.setBackground\(BG_IMAGE\)/.test(html));
+    check('DOM keeps the fixed hero background visible',
+        /\.bg-slideshow\s*\{[\s\S]*?background:\s*url\("memories\/comp\//.test(html));
+    check('pointer fallback keeps full-size lightbox source on each tile',
+        /inner\.dataset\.lightboxSrc\s*=\s*p\.src/.test(html) && /elementFromPoint/.test(html));
     check('scene uses docLeft AND docTop',
         sceneCode.includes('docLeft') && sceneCode.includes('docTop'));
     check('scene anchors via viewLeft/viewTop',
