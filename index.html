@@ -34,7 +34,7 @@ body {
 
 /*
   CONCEPT B (V3.3 overlay edition): Memories の Diamond は通常のDOM描画の
-  まま、その上にプロフィールと日付フィルターの sticky パネル (Liquid Glass) が浮く。
+  まま、hero内のプロフィールカードとギャラリーの日付フィルターにLiquid Glassを重ねる。
 
   Liquid Glass は sceneMode: 'overlay' で動作:
     - WebGL canvas はガラス領域だけを描く (境界 +1px 以外は alpha = 0)
@@ -43,7 +43,8 @@ body {
       body #0d0814 + BG写真 + .bg-overlay グラデーション
 
   Layer契約 (root stacking context, 上から):
-     20  .photos-controls   (sticky profile + filter group)
+     20  .photos-controls   (sticky filter only)
+     10  .profile-card      (sticky within the hero; leaves before the gallery)
       0  #mina-glcanvas     (fixed liquid overlay canvas)
      -1  .diamond-area      (below the canvas: refracted through it)
      -2  .bg-slideshow/.bg-overlay (fixed photo + dim layer, behind diamonds)
@@ -84,15 +85,16 @@ body {
 
 /* ===== Profile card (gallery controls) ===== */
 .profile-card {
-    position: relative;
+    position: sticky;
+    top: var(--profile-sticky-top);
     z-index: 10;
-    align-self: center;
-    width: min(880px, 100%);
-    padding: 24px 32px;
+    width: min(1080px, 100%);
+    margin: 16px auto 0;
+    padding: 20px 24px;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 28px;
+    gap: 22px;
 }
 
 /* nav */
@@ -168,7 +170,7 @@ body {
 }
 
 /* Links */
-.card-links { display: flex; gap: 8px; }
+.card-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .card-link {
     display: inline-flex;
     align-items: center;
@@ -229,12 +231,14 @@ body {
     justify-content: flex-end;
 }
 
-/* 最初の画面: カードの下にヒントを配置 */
+/* The sticky profile is constrained to the intro so it never covers the gallery. */
 .hero-hint {
+    position: relative;
     height: 100vh;
+    flex: none;
 }
 .hero-hint-fixed {
-    position: fixed;
+    position: absolute;
     bottom: 32px;
     left: 50%;
     transform: translateX(-50%);
@@ -288,7 +292,7 @@ body {
     z-index: 20;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
     margin-bottom: 20px;
 }
@@ -434,10 +438,39 @@ body {
     max-height: 88vh;
     border-radius: 12px;
     box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
+.lightbox.is-loaded img { opacity: 1; }
+.lightbox-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: rgba(255,255,255,0.86);
+    font-size: 14px;
+    pointer-events: none;
+}
+.lightbox-loader[hidden] { display: none; }
+.lightbox-spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid rgba(255,255,255,0.22);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: lightbox-spin 0.8s linear infinite;
+}
+.lightbox.is-error .lightbox-spinner { display: none; }
+.lightbox-status { margin: 0; }
+@keyframes lightbox-spin { to { transform: rotate(360deg); } }
 .lightbox-close {
     position: absolute;
     top: 20px; right: 24px;
+    z-index: 2;
     width: 40px; height: 40px;
     border-radius: 50%;
     background: rgba(255,255,255,0.12);
@@ -477,6 +510,25 @@ body {
     .lightbox.open,
     .lightbox.is-open,
     .lightbox.is-closing { animation: none; transition: none; }
+    .lightbox img { transition: none; }
+    .lightbox-spinner { animation: none; }
+}
+
+@media (max-width: 900px) {
+    .profile-card {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 14px 18px;
+        padding: 18px;
+    }
+    .card-avatar-row { grid-column: 1; grid-row: 1; }
+    .card-mid { grid-column: 2; grid-row: 1; }
+    .card-side {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
 }
 
 /* ===== Mobile ===== */
@@ -484,6 +536,7 @@ body {
     :root { --profile-sticky-top: 8px; }
     .photos-controls { gap: 8px; margin-bottom: 14px; }
     .profile-card {
+        margin-top: 8px;
         padding: 12px;
         grid-template-columns: minmax(0, 1fr) auto;
         grid-template-areas:
@@ -544,58 +597,56 @@ body {
 <!-- Scroll area (right side) -->
 <div class="scroll-area">
 
-    <!-- First screen: slide indicator -->
-    <div class="hero-hint"></div>
-    <div class="hero-hint-fixed">
-        <div class="hero-hint-label">Memories</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:1px;">scroll ↓</div>
+    <!-- Profile stays at the top during the intro, then leaves before the gallery. -->
+    <div class="hero-hint">
+        <aside class="profile-card mina-glass mina-glass--liquid" id="profileCard">
+            <div class="card-avatar-row">
+                <img class="card-avatar mina-avatar mina-avatar--lg" src="img/avaters/0.8.1/aikon_at.png" alt="お刺身くん">
+                <div>
+                    <div class="card-name">お刺身くん</div>
+                    <div class="card-sub">Photography</div>
+                </div>
+            </div>
+
+            <div class="card-mid">
+                <div class="card-section">
+                    <p>Discordによくいます。VRChatでは写真を撮るのが好きです。</p>
+                </div>
+                <div class="tags mina-tag-list">
+                    <span class="tag mina-chip">写真撮影</span>
+                    <span class="tag mina-chip">ワールド巡り</span>
+                </div>
+            </div>
+
+            <div class="card-side">
+                <div class="stat-grid">
+                    <div class="stat-item mina-stat">
+                        <div class="stat-label">活動開始</div>
+                        <div class="stat-value">2023年11月</div>
+                    </div>
+                    <div class="stat-item mina-stat">
+                        <div class="stat-label">活動時間</div>
+                        <div class="stat-value">夜間・週末</div>
+                    </div>
+                </div>
+                <div class="card-links">
+                    <a href="https://ossmxun.net" class="card-link" target="_blank" rel="noopener noreferrer" aria-label="お刺身くんのウェブサイト (ossmxun.net)"><img src="https://ossmxun.net/img/aikon.w/n_ossm_nc.webp" alt=""><span>ossmxun.net</span></a>
+                    <a href="https://xu.f5.si/vrc" class="card-link" target="_blank" rel="noopener noreferrer" aria-label="VRChat"><img src="img/logo/vrc.png" alt=""><span>VRChat</span></a>
+                    <a href="https://x.com/os_vrc" class="card-link card-link--x" target="_blank" rel="noopener noreferrer" aria-label="X"><img src="img/logo/x.png" alt=""><span>X</span></a>
+                    <a href="https://bsky.app/profile/vrc.ossmxun.net" class="card-link" target="_blank" rel="noopener noreferrer" aria-label="Bluesky"><img src="img/logo/bsky.png" alt=""><span>Bluesky</span></a>
+                </div>
+            </div>
+        </aside>
+        <div class="hero-hint-fixed">
+            <div class="hero-hint-label">Memories</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:1px;">scroll ↓</div>
+        </div>
     </div>
 
     <!-- Photos -->
     <div class="photos-area">
         <div class="photos-label">Memories</div>
         <div class="photos-controls">
-            <aside class="profile-card mina-glass mina-glass--liquid" id="profileCard">
-
-                <div class="card-avatar-row">
-                    <img class="card-avatar mina-avatar mina-avatar--lg" src="img/avaters/0.8.1/aikon_at.png" alt="お刺身くん">
-                    <div>
-                        <div class="card-name">お刺身くん</div>
-                        <div class="card-sub">VRChat / Photography</div>
-                    </div>
-                </div>
-
-                <div class="card-mid">
-                    <div class="card-section">
-                        <p>Discordによくいます。VRChatでは写真を撮るのが好きです。</p>
-                    </div>
-                    <div class="tags mina-tag-list">
-                        <span class="tag mina-chip">写真撮影</span>
-                        <span class="tag mina-chip">ワールド巡り</span>
-                        <span class="tag mina-chip">友達との会話</span>
-                    </div>
-                </div>
-
-                <div class="card-side">
-                    <div class="stat-grid">
-                        <div class="stat-item mina-stat">
-                            <div class="stat-label">活動開始</div>
-                            <div class="stat-value">2023年11月</div>
-                        </div>
-                        <div class="stat-item mina-stat">
-                            <div class="stat-label">活動時間</div>
-                            <div class="stat-value">夜間・週末</div>
-                        </div>
-                    </div>
-                    <div class="card-links">
-                        <a href="https://ossmxun.net" class="card-link" target="_blank" rel="noopener noreferrer" aria-label="お刺身くんのウェブサイト (ossmxun.net)"><img src="img/avaters/0.8.1/aikon_at.png" alt=""><span>ossmxun.net</span></a>
-                        <a href="https://xu.f5.si/vrc" class="card-link" target="_blank" rel="noopener noreferrer" aria-label="VRChat"><img src="img/logo/vrc.png" alt=""><span>VRChat</span></a>
-                        <a href="https://x.com/os_vrc" class="card-link card-link--x" target="_blank" rel="noopener noreferrer" aria-label="X"><img src="img/logo/x.png" alt=""><span>X</span></a>
-                        <a href="https://bsky.app/profile/vrc.ossmxun.net" class="card-link" target="_blank" rel="noopener noreferrer" aria-label="Bluesky"><img src="img/logo/bsky.png" alt=""><span>Bluesky</span></a>
-                    </div>
-                </div>
-
-            </aside>
             <div class="filter-bar mina-glass mina-glass--liquid" id="filterBar"></div>
         </div>
         <div class="diamond-area" id="collageArea"></div>
@@ -605,7 +656,11 @@ body {
 
 <!-- Lightbox -->
 <div class="lightbox mina-modal" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true" hidden data-mina-backdrop-close="true">
-    <button type="button" class="lightbox-close mina-btn mina-btn--icon mina-btn--sm" id="lightboxClose" aria-label="Close image">✕</button>
+    <button type="button" class="lightbox-close mina-btn mina-btn--icon mina-btn--sm" id="lightboxClose" aria-label="画像を閉じる">✕</button>
+    <div class="lightbox-loader" id="lightboxLoader" role="status" aria-live="polite" hidden>
+        <span class="lightbox-spinner" aria-hidden="true"></span>
+        <p class="lightbox-status" id="lightboxStatus">画像を読み込み中…</p>
+    </div>
     <img id="lightboxImg" src="" alt="" hidden>
 </div>
 
@@ -908,6 +963,8 @@ const collageArea = document.getElementById('collageArea');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxClose = document.getElementById('lightboxClose');
+const lightboxLoader = document.getElementById('lightboxLoader');
+const lightboxStatus = document.getElementById('lightboxStatus');
 let lightboxRequest = 0;
 let lightboxCloseTimer = 0;
 let lightboxTrigger = null;
@@ -939,9 +996,11 @@ function finishLightboxClose() {
     window.clearTimeout(lightboxCloseTimer);
     lightboxCloseTimer = 0;
     if (window.MinaUI) MinaUI.close(lightbox);
-    lightbox.classList.remove('is-closing', 'open', 'is-open');
+    lightbox.classList.remove('is-closing', 'open', 'is-open', 'is-loading', 'is-loaded', 'is-error');
     lightboxImg.hidden = true;
     lightboxImg.removeAttribute('src');
+    lightboxLoader.hidden = true;
+    lightboxStatus.textContent = '';
     lightbox.removeAttribute('aria-busy');
     lightbox.setAttribute('aria-hidden', 'true');
     lightbox.hidden = true;
@@ -971,11 +1030,18 @@ async function openLightbox(src, trigger) {
     lightboxCloseTimer = 0;
     lightboxTrigger = trigger || document.activeElement;
     const wasOpen = !lightbox.hidden && (lightbox.classList.contains('open') || lightbox.classList.contains('is-open'));
-    lightbox.classList.remove('is-closing', 'open');
+    lightbox.classList.remove('is-closing', 'is-loading', 'is-loaded', 'is-error');
     if (!wasOpen) lightbox.classList.remove('is-open');
     lightboxImg.hidden = true;
+    lightboxImg.removeAttribute('src');
+    lightboxLoader.hidden = false;
+    lightboxStatus.textContent = '画像を読み込み中…';
+    lightbox.classList.add('is-loading');
     lightbox.setAttribute('aria-busy', 'true');
-    if (!wasOpen) lightbox.hidden = true;
+    lightbox.hidden = false;
+    if (!wasOpen && window.MinaUI) MinaUI.open(lightbox);
+    if (!wasOpen) lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
 
     try {
         const preload = await preloadLightboxImage(src);
@@ -983,18 +1049,19 @@ async function openLightbox(src, trigger) {
         lightboxImg.src = preload.currentSrc || preload.src || src;
         await waitForImageDecode(lightboxImg);
         if (request !== lightboxRequest) return;
-        lightbox.hidden = false;
-        if (window.MinaUI) MinaUI.open(lightbox);
-        lightbox.classList.add('open');
-        lightbox.setAttribute('aria-hidden', 'false');
+        lightbox.classList.remove('is-loading', 'is-error');
+        lightbox.classList.add('is-loaded');
+        lightboxLoader.hidden = true;
         lightbox.removeAttribute('aria-busy');
         lightboxImg.hidden = false;
     } catch (_) {
         if (request !== lightboxRequest) return;
         lightboxImg.hidden = true;
+        lightbox.classList.remove('is-loading', 'is-loaded');
+        lightbox.classList.add('is-error');
+        lightboxLoader.hidden = false;
+        lightboxStatus.textContent = '画像を読み込めませんでした。';
         lightbox.removeAttribute('aria-busy');
-        lightbox.hidden = true;
-        lightbox.setAttribute('aria-hidden', 'true');
     }
 }
 
